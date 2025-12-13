@@ -1,6 +1,8 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Poppins, Playfair_Display } from "next/font/google"
+import { ThemeProvider } from "@/components/theme-provider"
+// @ts-ignore: allow side-effect css import without module declarations
 import "./globals.css"
 
 const poppins = Poppins({
@@ -139,7 +141,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
@@ -150,7 +152,16 @@ export default function RootLayout({
         <meta name="geo.region" content="PK" />
         <meta name="geo.placename" content="Pakistan" />
       </head>
-      <body className={`${poppins.variable} ${playfair.variable} font-sans antialiased`}>{children}</body>
+      <body className={`${poppins.variable} ${playfair.variable} font-sans antialiased`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   )
 }

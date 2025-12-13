@@ -34,6 +34,28 @@
     --ring: 340 75% 55%;
     --radius: 1rem;
   }
+
+  .dark {
+    --background: 260 20% 10%;
+    --foreground: 340 20% 95%;
+    --card: 260 20% 14%;
+    --card-foreground: 340 20% 95%;
+    --popover: 260 20% 12%;
+    --popover-foreground: 340 20% 95%;
+    --primary: 340 75% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 280 30% 20%;
+    --secondary-foreground: 340 20% 95%;
+    --muted: 260 20% 18%;
+    --muted-foreground: 340 15% 65%;
+    --accent: 280 60% 70%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 260 20% 22%;
+    --input: 260 20% 22%;
+    --ring: 340 75% 60%;
+  }
 }
 
 /* Custom animations for dynamic elements */
@@ -134,6 +156,11 @@
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
+.dark .glass {
+  background: rgba(30, 20, 40, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
@@ -143,13 +170,178 @@
   background: #fdf2f8;
 }
 
+.dark ::-webkit-scrollbar-track {
+  background: #1a1025;
+}
+
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, #ec4899, #a855f7);
   border-radius: 4px;
 }
 
+/* Flower Loading Animation */
+@keyframes flower-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes petal-pulse {
+  0%, 100% { 
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes center-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.6), 0 0 20px rgba(251, 191, 36, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(251, 191, 36, 0.8), 0 0 30px rgba(251, 191, 36, 0.5);
+    transform: scale(1.1);
+  }
+}
+
+.flower-loader {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  animation: flower-spin 10s linear infinite;
+}
+
+/* Petal base style - rounded teardrop shape */
+.flower-loader .petal {
+  position: absolute;
+  width: 20px;
+  height: 35px;
+  border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%;
+  animation: petal-pulse 2s ease-in-out infinite;
+}
+
+/* Position each petal radiating from center */
+.flower-loader .petal:nth-child(1) {
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%) rotate(0deg);
+  background: linear-gradient(to bottom, #f472b6, #ec4899);
+  animation-delay: 0s;
+}
+
+.flower-loader .petal:nth-child(2) {
+  top: 14px;
+  right: 14px;
+  transform: rotate(45deg);
+  background: linear-gradient(to bottom, #e879f9, #d946ef);
+  animation-delay: 0.1s;
+}
+
+.flower-loader .petal:nth-child(3) {
+  top: 50%;
+  right: 5px;
+  transform: translateY(-50%) rotate(90deg);
+  background: linear-gradient(to bottom, #c084fc, #a855f7);
+  animation-delay: 0.2s;
+}
+
+.flower-loader .petal:nth-child(4) {
+  bottom: 14px;
+  right: 14px;
+  transform: rotate(135deg);
+  background: linear-gradient(to bottom, #a78bfa, #8b5cf6);
+  animation-delay: 0.3s;
+}
+
+.flower-loader .petal:nth-child(5) {
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%) rotate(180deg);
+  background: linear-gradient(to bottom, #c084fc, #a855f7);
+  animation-delay: 0.4s;
+}
+
+.flower-loader .petal:nth-child(6) {
+  bottom: 14px;
+  left: 14px;
+  transform: rotate(225deg);
+  background: linear-gradient(to bottom, #e879f9, #d946ef);
+  animation-delay: 0.5s;
+}
+
+.flower-loader .petal:nth-child(7) {
+  top: 50%;
+  left: 5px;
+  transform: translateY(-50%) rotate(270deg);
+  background: linear-gradient(to bottom, #f472b6, #ec4899);
+  animation-delay: 0.6s;
+}
+
+.flower-loader .petal:nth-child(8) {
+  top: 14px;
+  left: 14px;
+  transform: rotate(315deg);
+  background: linear-gradient(to bottom, #fb7185, #f43f5e);
+  animation-delay: 0.7s;
+}
+
+/* Flower center */
+.flower-loader .center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fde047, #fbbf24, #f59e0b);
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.6);
+  animation: center-glow 1.5s ease-in-out infinite;
+  z-index: 10;
+}
+
+/* Dark mode colors */
+.dark .flower-loader .petal:nth-child(1) { background: linear-gradient(to bottom, #f9a8d4, #ec4899); }
+.dark .flower-loader .petal:nth-child(2) { background: linear-gradient(to bottom, #f0abfc, #d946ef); }
+.dark .flower-loader .petal:nth-child(3) { background: linear-gradient(to bottom, #d8b4fe, #a855f7); }
+.dark .flower-loader .petal:nth-child(4) { background: linear-gradient(to bottom, #c4b5fd, #8b5cf6); }
+.dark .flower-loader .petal:nth-child(5) { background: linear-gradient(to bottom, #d8b4fe, #a855f7); }
+.dark .flower-loader .petal:nth-child(6) { background: linear-gradient(to bottom, #f0abfc, #d946ef); }
+.dark .flower-loader .petal:nth-child(7) { background: linear-gradient(to bottom, #f9a8d4, #ec4899); }
+.dark .flower-loader .petal:nth-child(8) { background: linear-gradient(to bottom, #fda4af, #f43f5e); }
+
+.dark .flower-loader .center {
+  background: radial-gradient(circle at 30% 30%, #fef08a, #fde047, #fbbf24);
+  box-shadow: 0 0 20px rgba(253, 224, 71, 0.7);
+}
+
+/* Instagram embed full height */
+.instagram-media {
+  min-height: 550px !important;
+  max-width: 100% !important;
+}
+
+.instagram-media iframe {
+  min-height: 550px !important;
+}
+
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #db2777, #9333ea);
+}
+
+/* Instagram embed enhancements */
+.instagram-media {
+  border-radius: 16px !important;
+  box-shadow: none !important;
+  border: none !important;
+  min-height: 420px !important;
+}
+
+.instagram-media-rendered {
+  border-radius: 16px !important;
 }
 
 @layer base {

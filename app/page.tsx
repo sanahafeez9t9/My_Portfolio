@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -31,6 +31,8 @@ import {
   Megaphone,
   PenTool,
   Loader2,
+  Moon,
+  Sun,
 } from "lucide-react"
 import {
   SiPython,
@@ -43,9 +45,45 @@ import {
   SiAdobexd,
   SiCanva,
   SiAdobephotoshop,
+  SiTypescript,
 } from "react-icons/si"
 import { FaJava } from "react-icons/fa"
+import { useTheme } from "next-themes"
+import { DotLottieReact } from "@lottiefiles/dotlottie-react"
 import instagramEmbeds from "@/lib/instagram-embeds.json"
+
+// Lottie Loading Component
+function LottieLoader({ text = "Loading..." }: { text?: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-6">
+      <motion.div 
+        className="w-48 h-48 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80"
+        animate={{ 
+          scale: [1, 1.02, 1],
+        }}
+        transition={{ 
+          duration: 3, 
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      >
+        <DotLottieReact
+          src="/Girl's face.lottie"
+          loop
+          autoplay
+          style={{ width: "100%", height: "100%" }}
+        />
+      </motion.div>
+      <motion.p 
+        className="text-pink-500 dark:text-pink-400 font-medium text-base sm:text-lg md:text-xl"
+        animate={{ opacity: [0.5, 1, 0.5] }}
+        transition={{ duration: 1.5, repeat: Infinity }}
+      >
+        {text}
+      </motion.p>
+    </div>
+  )
+}
 
 export default function Portfolio() {
   const [activeSection, setActiveSection] = useState("home")
@@ -54,9 +92,22 @@ export default function Portfolio() {
   const [formStatus, setFormStatus] = useState<"idle" | "sending" | "sent" | "error">("idle")
   const [selectedProjectIndex, setSelectedProjectIndex] = useState<number | null>(null)
   const [activeInstagramIndex, setActiveInstagramIndex] = useState(0)
-  const [isInstagramHovered, setIsInstagramHovered] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const instagramHoveredRef = useRef(false)
+  const instagramContainerRef = useRef<HTMLDivElement | null>(null)
   const { scrollYProgress } = useScroll()
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"])
+  const { theme, setTheme } = useTheme()
+
+  useEffect(() => {
+    setMounted(true)
+    // Simulate initial load
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 2000)
+    return () => clearTimeout(timer)
+  }, [])
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -95,14 +146,17 @@ export default function Portfolio() {
 
   useEffect(() => {
     if (instagramEmbeds.length <= 1) return
-    if (isInstagramHovered) return
 
     const interval = setInterval(() => {
+      if (instagramHoveredRef.current) return
       setActiveInstagramIndex((prev) => (prev + 1) % instagramEmbeds.length)
     }, 5000)
 
     return () => clearInterval(interval)
-  }, [isInstagramHovered])
+  }, [])
+
+  // Hover state for Instagram carousel is tracked via a ref so that
+  // pausing auto-scroll does not trigger React re-renders.
 
   useEffect(() => {
     const handleScroll = () => {
@@ -206,23 +260,70 @@ export default function Portfolio() {
     },
   ]
 
+  // Loading Screen
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 dark:from-gray-900 dark:via-purple-950 dark:to-gray-900 flex items-center justify-center transition-colors duration-300 px-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="text-center"
+        >
+          <LottieLoader text="Welcome to my portfolio..." />
+          <motion.div
+            className="mt-6 sm:mt-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+          >
+            <motion.h1 
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-pink-600 via-rose-500 to-purple-600 bg-clip-text text-transparent"
+              animate={{ 
+                backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+              }}
+              style={{ backgroundSize: "200% 200%" }}
+              transition={{ 
+                duration: 4, 
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            >
+              Sana Hafeez
+            </motion.h1>
+            <motion.div
+              className="mt-3 flex justify-center gap-1"
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{ delay: 0.8, duration: 0.5 }}
+            >
+              <span className="w-2 h-2 rounded-full bg-pink-400 animate-pulse" />
+              <span className="w-8 sm:w-12 h-1 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 self-center" />
+              <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+            </motion.div>
+          </motion.div>
+        </motion.div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 dark:from-gray-900 dark:via-purple-950 dark:to-gray-900 overflow-x-hidden transition-colors duration-300">
       {/* Dynamic Animated Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         {/* Animated gradient blobs */}
         <motion.div
-          className="absolute -top-40 -left-40 w-80 h-80 bg-gradient-to-br from-pink-300/40 to-rose-400/30 rounded-full blur-3xl animate-blob"
+          className="absolute -top-40 -left-40 w-80 h-80 bg-gradient-to-br from-pink-300/40 to-rose-400/30 dark:from-pink-500/20 dark:to-rose-600/15 rounded-full blur-3xl animate-blob"
           animate={{ x: [0, 30, 0], y: [0, -30, 0] }}
           transition={{ duration: 15, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute top-1/3 -right-20 w-96 h-96 bg-gradient-to-br from-purple-300/30 to-fuchsia-400/20 rounded-full blur-3xl animate-blob"
+          className="absolute top-1/3 -right-20 w-96 h-96 bg-gradient-to-br from-purple-300/30 to-fuchsia-400/20 dark:from-purple-500/20 dark:to-fuchsia-600/15 rounded-full blur-3xl animate-blob"
           animate={{ x: [0, -40, 0], y: [0, 40, 0] }}
           transition={{ duration: 18, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", delay: 2 }}
         />
         <motion.div
-          className="absolute -bottom-20 left-1/3 w-72 h-72 bg-gradient-to-br from-rose-300/30 to-pink-400/20 rounded-full blur-3xl animate-blob"
+          className="absolute -bottom-20 left-1/3 w-72 h-72 bg-gradient-to-br from-rose-300/30 to-pink-400/20 dark:from-rose-500/15 dark:to-pink-600/10 rounded-full blur-3xl animate-blob"
           animate={{ x: [0, 50, 0], y: [0, -20, 0] }}
           transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", delay: 4 }}
         />
@@ -302,7 +403,7 @@ export default function Portfolio() {
 
       {/* Navigation */}
       <motion.nav
-        className="fixed top-0 left-0 right-0 z-50 glass border-b border-pink-100/50"
+        className="fixed top-0 left-0 right-0 z-50 glass border-b border-pink-100/50 dark:border-purple-800/30"
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
@@ -310,7 +411,7 @@ export default function Portfolio() {
         <div className="container mx-auto px-4 md:px-6 py-3 md:py-4">
           <div className="flex justify-between items-center">
             <motion.div
-              className="text-xl md:text-2xl font-bold font-[var(--font-playfair)]"
+              className="text-xl md:text-2xl font-sans font-bold"
               whileHover={{ scale: 1.05 }}
             >
               <span className="bg-gradient-to-r from-pink-600 via-rose-500 to-purple-600 bg-clip-text text-transparent animate-gradient">
@@ -325,7 +426,7 @@ export default function Portfolio() {
                   key={section}
                   onClick={() => scrollToSection(section)}
                   className={`relative px-4 py-2 capitalize text-sm font-medium rounded-full transition-all ${
-                    activeSection === section ? "text-pink-600" : "text-gray-600 hover:text-pink-500"
+                    activeSection === section ? "text-pink-600 dark:text-pink-400" : "text-gray-600 dark:text-gray-300 hover:text-pink-500 dark:hover:text-pink-400"
                   }`}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -333,44 +434,70 @@ export default function Portfolio() {
                   {activeSection === section && (
                     <motion.div
                       layoutId="activeNav"
-                      className="absolute inset-0 bg-pink-100/80 rounded-full -z-10"
+                      className="absolute inset-0 bg-pink-100/80 dark:bg-pink-900/40 rounded-full -z-10"
                       transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                     />
                   )}
                   {section}
                 </motion.button>
               ))}
+
+              {/* Theme Toggle */}
+              {mounted && (
+                <motion.button
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  className="p-2 rounded-full bg-pink-100/80 dark:bg-purple-900/50 text-pink-600 dark:text-pink-400 ml-2"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  aria-label="Toggle theme"
+                >
+                  {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+                </motion.button>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
-            <motion.button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-full bg-pink-100/80 text-pink-600"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              <AnimatePresence mode="wait">
-                {mobileMenuOpen ? (
-                  <motion.div
-                    key="close"
-                    initial={{ rotate: -90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: 90, opacity: 0 }}
-                  >
-                    <X size={22} />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="menu"
-                    initial={{ rotate: 90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: -90, opacity: 0 }}
-                  >
-                    <Menu size={22} />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.button>
+            <div className="flex items-center gap-2 md:hidden">
+              {mounted && (
+                <motion.button
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  className="p-2 rounded-full bg-pink-100/80 dark:bg-purple-900/50 text-pink-600 dark:text-pink-400"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  aria-label="Toggle theme"
+                >
+                  {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+                </motion.button>
+              )}
+              <motion.button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="p-2 rounded-full bg-pink-100/80 dark:bg-purple-900/50 text-pink-600 dark:text-pink-400"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <AnimatePresence mode="wait">
+                  {mobileMenuOpen ? (
+                    <motion.div
+                      key="close"
+                      initial={{ rotate: -90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: 90, opacity: 0 }}
+                    >
+                      <X size={22} />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="menu"
+                      initial={{ rotate: 90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: -90, opacity: 0 }}
+                    >
+                      <Menu size={22} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.button>
+            </div>
           </div>
         </div>
 
@@ -381,7 +508,7 @@ export default function Portfolio() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden glass border-t border-pink-100/50 overflow-hidden"
+              className="md:hidden glass border-t border-pink-100/50 dark:border-purple-800/30 overflow-hidden"
             >
               <div className="container mx-auto px-4 py-4 flex flex-col gap-2">
                 {navigationItems.map((section, index) => (
@@ -391,7 +518,7 @@ export default function Portfolio() {
                     className={`w-full text-left px-4 py-3 rounded-xl capitalize font-medium transition-all ${
                       activeSection === section
                         ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white"
-                        : "text-gray-600 hover:bg-pink-50"
+                        : "text-gray-600 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-purple-900/30"
                     }`}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -420,7 +547,7 @@ export default function Portfolio() {
               transition={{ duration: 0.8 }}
             >
               <motion.div
-                className="inline-flex items-center gap-2 px-4 py-2 bg-pink-100/80 rounded-full text-pink-600 text-sm font-medium mb-6"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-pink-100/80 dark:bg-pink-900/40 rounded-full text-pink-600 dark:text-pink-400 text-sm font-medium mb-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
@@ -430,12 +557,12 @@ export default function Portfolio() {
               </motion.div>
 
               <motion.h1
-                className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 leading-tight font-[var(--font-playfair)]"
+                className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-sans font-bold mb-6 leading-tight"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
               >
-                <span className="text-gray-800">Hi, I'm</span>
+                <span className="text-gray-800 dark:text-gray-100">Hi, I'm</span>
                 <br />
                 <span className="bg-gradient-to-r from-pink-500 via-rose-500 to-purple-500 bg-clip-text text-transparent animate-gradient">
                   Sana Hafeez
@@ -443,18 +570,18 @@ export default function Portfolio() {
               </motion.h1>
 
               <motion.p
-                className="text-lg md:text-xl text-gray-600 mb-4 leading-relaxed"
+                className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-4 leading-relaxed"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
               >
                 UI/UX Designer | Digital Marketing Enthusiast
                 <br />
-                <span className="text-pink-500 font-semibold">Crafting beautiful digital experiences</span>
+                <span className="text-pink-500 dark:text-pink-400 font-semibold">Crafting beautiful digital experiences</span>
               </motion.p>
 
               <motion.p
-                className="text-gray-500 mb-8 max-w-lg mx-auto lg:mx-0"
+                className="text-gray-500 dark:text-gray-400 mb-8 max-w-lg mx-auto lg:mx-0"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
@@ -479,7 +606,7 @@ export default function Portfolio() {
                 <Button
                   onClick={() => scrollToSection("contact")}
                   variant="outline"
-                  className="border-2 border-pink-300 text-pink-600 hover:bg-pink-50 px-8 py-6 rounded-full text-base font-medium"
+                  className="border-2 border-pink-300 dark:border-pink-500/50 text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/20 px-8 py-6 rounded-full text-base font-medium"
                 >
                   <Mail className="mr-2" size={18} />
                   Let's Connect
@@ -497,7 +624,7 @@ export default function Portfolio() {
                   href="https://github.com/sanahafeez9t9"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-3 rounded-full bg-white shadow-lg hover:shadow-xl text-gray-600 hover:text-pink-500 transition-all"
+                  className="p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl text-gray-600 dark:text-gray-300 hover:text-pink-500 dark:hover:text-pink-400 transition-all"
                   whileHover={{ scale: 1.1, y: -3 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -507,7 +634,7 @@ export default function Portfolio() {
                   href="https://www.linkedin.com/in/sana-hafeez-839599361/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-3 rounded-full bg-white shadow-lg hover:shadow-xl text-gray-600 hover:text-pink-500 transition-all"
+                  className="p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl text-gray-600 dark:text-gray-300 hover:text-pink-500 dark:hover:text-pink-400 transition-all"
                   whileHover={{ scale: 1.1, y: -3 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -515,7 +642,7 @@ export default function Portfolio() {
                 </motion.a>
                 <motion.a
                   href="mailto:sanahafeez8oct@gmail.com"
-                  className="p-3 rounded-full bg-white shadow-lg hover:shadow-xl text-gray-600 hover:text-pink-500 transition-all"
+                  className="p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl text-gray-600 dark:text-gray-300 hover:text-pink-500 dark:hover:text-pink-400 transition-all"
                   whileHover={{ scale: 1.1, y: -3 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -609,8 +736,8 @@ export default function Portfolio() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <span className="text-pink-500 font-medium mb-2 block">Get to know me</span>
-            <h2 className="text-3xl md:text-5xl font-bold mb-4 font-[var(--font-playfair)] text-gray-800">About Me</h2>
+            <span className="text-pink-500 dark:text-pink-400 font-medium mb-2 block">Get to know me</span>
+            <h2 className="text-3xl md:text-5xl font-sans font-bold mb-4 text-gray-800 dark:text-gray-100">About Me</h2>
             <div className="w-24 h-1 bg-gradient-to-r from-pink-500 to-purple-500 mx-auto rounded-full" />
           </motion.div>
 
@@ -622,25 +749,25 @@ export default function Portfolio() {
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
             >
-              <p className="text-lg text-gray-600 mb-6 leading-relaxed text-center md:text-left">
-                I'm a passionate <span className="text-pink-500 font-semibold">Software Engineering student</span> at
+              <p className="text-lg text-gray-600 dark:text-gray-300 mb-6 leading-relaxed text-center md:text-left">
+                I'm a passionate <span className="text-pink-500 dark:text-pink-400 font-semibold">Software Engineering student</span> at
                 the National University of Modern Languages with a creative soul. While I'm equipped with technical
                 skills, my heart lies in the world of{" "}
-                <span className="text-purple-500 font-semibold">design and digital creativity</span>.
+                <span className="text-purple-500 dark:text-purple-400 font-semibold">design and digital creativity</span>.
               </p>
-              <p className="text-lg text-gray-600 mb-8 leading-relaxed text-center md:text-left">
+              <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed text-center md:text-left">
                 I believe in the power of beautiful design to transform user experiences. My journey combines technical
                 knowledge with artistic vision, allowing me to create digital experiences that are both functional and
                 visually stunning.
               </p>
 
-              <div className="flex flex-wrap items-center justify-center gap-4 text-gray-600">
-                <div className="flex items-center gap-2 bg-pink-50 px-4 py-2 rounded-full">
-                  <MapPin className="text-pink-500" size={18} />
+              <div className="flex flex-wrap items-center justify-center gap-4 text-gray-600 dark:text-gray-300">
+                <div className="flex items-center gap-2 bg-pink-50 dark:bg-pink-900/30 px-4 py-2 rounded-full">
+                  <MapPin className="text-pink-500 dark:text-pink-400" size={18} />
                   <span className="text-sm">Abbottabad, Pakistan</span>
                 </div>
-                <div className="flex items-center gap-2 bg-purple-50 px-4 py-2 rounded-full">
-                  <Mail className="text-purple-500" size={18} />
+                <div className="flex items-center gap-2 bg-purple-50 dark:bg-purple-900/30 px-4 py-2 rounded-full">
+                  <Mail className="text-purple-500 dark:text-purple-400" size={18} />
                   <span className="text-sm">sanahafeez8oct@gmail.com</span>
                 </div>
               </div>
@@ -656,7 +783,7 @@ export default function Portfolio() {
                   transition={{ duration: 0.6, delay: index * 0.15 }}
                   viewport={{ once: true }}
                 >
-                  <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 h-full group">
+                  <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 h-full group">
                     <CardContent className="p-6 text-center">
                       <motion.div
                         className={`w-16 h-16 bg-gradient-to-br ${area.color} rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg`}
@@ -664,8 +791,8 @@ export default function Portfolio() {
                       >
                         <area.icon className="text-white" size={28} />
                       </motion.div>
-                      <h3 className="font-bold text-gray-800 mb-2 text-lg">{area.title}</h3>
-                      <p className="text-gray-500 text-sm">{area.description}</p>
+                      <h3 className="font-bold text-gray-800 dark:text-gray-100 mb-2 text-lg">{area.title}</h3>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm">{area.description}</p>
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -676,7 +803,7 @@ export default function Portfolio() {
       </section>
 
       {/* Education Section */}
-      <section id="education" className="py-20 md:py-28 bg-gradient-to-b from-white/50 to-pink-50/50">
+      <section id="education" className="py-20 md:py-28 bg-gradient-to-b from-white/50 to-pink-50/50 dark:from-gray-900/50 dark:to-purple-950/50">
         <div className="container mx-auto px-4 md:px-6">
           <motion.div
             className="text-center mb-16"
@@ -685,8 +812,8 @@ export default function Portfolio() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <span className="text-pink-500 font-medium mb-2 block">My journey</span>
-            <h2 className="text-3xl md:text-5xl font-bold mb-4 font-[var(--font-playfair)] text-gray-800">Education</h2>
+            <span className="text-pink-500 dark:text-pink-400 font-medium mb-2 block">My journey</span>
+            <h2 className="text-3xl md:text-5xl font-sans font-bold mb-4 text-gray-800 dark:text-gray-100">Education</h2>
             <div className="w-24 h-1 bg-gradient-to-r from-pink-500 to-purple-500 mx-auto rounded-full" />
           </motion.div>
 
@@ -696,7 +823,7 @@ export default function Portfolio() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <Card className="max-w-4xl mx-auto border-0 shadow-2xl bg-white/90 backdrop-blur-sm overflow-hidden">
+            <Card className="max-w-4xl mx-auto border-0 shadow-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm overflow-hidden">
               <div className="h-2 bg-gradient-to-r from-pink-500 via-rose-500 to-purple-500" />
               <CardHeader className="pb-4 pt-8">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4">
@@ -707,21 +834,21 @@ export default function Portfolio() {
                     <span className="text-white font-bold text-xl">NUML</span>
                   </motion.div>
                   <div>
-                    <CardTitle className="text-xl md:text-2xl text-gray-800">
+                    <CardTitle className="text-xl md:text-2xl text-gray-800 dark:text-gray-100">
                       National University of Modern Languages
                     </CardTitle>
-                    <CardDescription className="text-base text-gray-600">
+                    <CardDescription className="text-base text-gray-600 dark:text-gray-400">
                       Bachelor of Science in Software Engineering
                     </CardDescription>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-pink-600">
+                <div className="flex items-center gap-2 text-pink-600 dark:text-pink-400">
                   <Calendar size={16} />
                   <span className="font-medium">Sep 2021 – May 2026</span>
                 </div>
               </CardHeader>
               <CardContent className="pb-8">
-                <h4 className="font-semibold text-gray-800 mb-4">Relevant Coursework:</h4>
+                <h4 className="font-semibold text-gray-800 dark:text-gray-100 mb-4">Relevant Coursework:</h4>
                 <div className="flex flex-wrap gap-2">
                   {[
                     "Data Structures",
@@ -741,7 +868,7 @@ export default function Portfolio() {
                       transition={{ delay: index * 0.05 }}
                       viewport={{ once: true }}
                     >
-                      <Badge className="bg-gradient-to-r from-pink-100 to-purple-100 text-pink-700 hover:from-pink-200 hover:to-purple-200 border-0 py-1.5 px-3">
+                      <Badge className="bg-gradient-to-r from-pink-100 to-purple-100 dark:from-pink-900/50 dark:to-purple-900/50 text-pink-700 dark:text-pink-300 hover:from-pink-200 hover:to-purple-200 dark:hover:from-pink-800/50 dark:hover:to-purple-800/50 border-0 py-1.5 px-3">
                         {course}
                       </Badge>
                     </motion.div>
@@ -763,8 +890,8 @@ export default function Portfolio() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <span className="text-pink-500 font-medium mb-2 block">Where I've worked</span>
-            <h2 className="text-3xl md:text-5xl font-bold mb-4 font-[var(--font-playfair)] text-gray-800">
+            <span className="text-pink-500 dark:text-pink-400 font-medium mb-2 block">Where I've worked</span>
+            <h2 className="text-3xl md:text-5xl font-sans font-bold mb-4 text-gray-800 dark:text-gray-100">
               Experience
             </h2>
             <div className="w-24 h-1 bg-gradient-to-r from-pink-500 to-purple-500 mx-auto rounded-full" />
@@ -796,25 +923,25 @@ export default function Portfolio() {
                 transition={{ duration: 0.8 }}
                 viewport={{ once: true }}
               >
-                <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden hover:shadow-2xl transition-all">
+                <Card className="border-0 shadow-xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm overflow-hidden hover:shadow-2xl transition-all">
                   <div
                     className={`h-1 bg-gradient-to-r ${index === 0 ? "from-pink-500 to-rose-500" : "from-purple-500 to-fuchsia-500"}`}
                   />
                   <CardContent className="p-6 md:p-8">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                       <div>
-                        <h3 className="text-xl font-bold text-gray-800">{exp.role}</h3>
-                        <p className="text-pink-500 font-medium">{exp.company}</p>
+                        <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">{exp.role}</h3>
+                        <p className="text-pink-500 dark:text-pink-400 font-medium">{exp.company}</p>
                       </div>
-                      <Badge variant="outline" className="border-pink-300 text-pink-600 w-fit">
+                      <Badge variant="outline" className="border-pink-300 dark:border-pink-700 text-pink-600 dark:text-pink-400 w-fit">
                         <Calendar size={14} className="mr-1" />
                         {exp.period}
                       </Badge>
                     </div>
-                    <p className="text-gray-600 mb-4">{exp.description}</p>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">{exp.description}</p>
                     <div className="flex flex-wrap gap-2">
                       {exp.skills.map((skill) => (
-                        <Badge key={skill} className="bg-pink-50 text-pink-600 border-0">
+                        <Badge key={skill} className="bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 border-0">
                           {skill}
                         </Badge>
                       ))}
@@ -828,7 +955,7 @@ export default function Portfolio() {
       </section>
 
       {/* Projects Section */}
-      <section id="projects" className="py-20 md:py-28 bg-gradient-to-b from-pink-50/50 to-white/50">
+      <section id="projects" className="py-20 md:py-28 bg-gradient-to-b from-pink-50/50 to-white/50 dark:from-purple-950/30 dark:to-gray-900/50">
         <div className="container mx-auto px-4 md:px-6">
           <motion.div
             className="text-center mb-16"
@@ -837,8 +964,8 @@ export default function Portfolio() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <span className="text-pink-500 font-medium mb-2 block">My creative work</span>
-            <h2 className="text-3xl md:text-5xl font-bold mb-4 font-[var(--font-playfair)] text-gray-800">Projects</h2>
+            <span className="text-pink-500 dark:text-pink-400 font-medium mb-2 block">My creative work</span>
+            <h2 className="text-3xl md:text-5xl font-sans font-bold mb-4 text-gray-800 dark:text-gray-100">Projects</h2>
             <div className="w-24 h-1 bg-gradient-to-r from-pink-500 to-purple-500 mx-auto rounded-full" />
           </motion.div>
 
@@ -854,18 +981,9 @@ export default function Portfolio() {
                 gradient: "from-pink-500 to-rose-500",
               },
               {
-                title: "WireGuard VPN System",
-                type: "Network Security",
-                date: "Nov 2024",
-                description:
-                  "Secure VPN solution using WireGuard with Python automation for tunnel configuration and performance optimization.",
-                tech: ["Cisco", "Python", "WireGuard", "Networking"],
-                gradient: "from-purple-500 to-fuchsia-500",
-              },
-              {
                 title: "Habit Tracking App",
-                type: "Mobile / Web App",
-                date: "2024",
+                type: " Web App",
+                date: "2025",
                 description:
                   "A simple and clean habit tracker that helps users build consistency with daily routines.",
                 tech: ["React", "TypeScript", "CSS"],
@@ -895,7 +1013,7 @@ export default function Portfolio() {
                 viewport={{ once: true }}
               >
                 <Card
-                  className="border-0 shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden group hover:shadow-2xl transition-all h-full cursor-pointer"
+                  className="border-0 shadow-xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm overflow-hidden group hover:shadow-2xl transition-all h-full cursor-pointer"
                   onClick={() =>
                     setSelectedProjectIndex((prev) => (prev === index ? null : index))
                   }
@@ -914,19 +1032,19 @@ export default function Portfolio() {
                       <Badge className={`bg-gradient-to-r ${project.gradient} text-white border-0`}>
                         {project.type}
                       </Badge>
-                      <span className="text-sm text-gray-500">{project.date}</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">{project.date}</span>
                     </div>
-                    <h3 className="text-xl font-bold text-gray-800 mb-3">{project.title}</h3>
-                    <p className="text-gray-600 mb-4 text-sm">{project.description}</p>
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-3">{project.title}</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">{project.description}</p>
                     <div className="flex flex-wrap gap-2">
                       {project.tech.map((t) => (
-                        <Badge key={t} variant="outline" className="border-gray-200 text-gray-600 text-xs">
+                        <Badge key={t} variant="outline" className="border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 text-xs">
                           {t}
                         </Badge>
                       ))}
                     </div>
                     {selectedProjectIndex === index && (
-                      <div className="mt-5 border-t border-pink-100 pt-4 space-y-3 text-sm text-gray-700">
+                      <div className="mt-5 border-t border-pink-100 dark:border-pink-900/50 pt-4 space-y-3 text-sm text-gray-700 dark:text-gray-300">
                         {"details" in project && project.details && (
                           <p>{project.details}</p>
                         )}
@@ -948,7 +1066,7 @@ export default function Portfolio() {
                             </Button>
                           </div>
                         )}
-                        <p className="text-[11px] text-gray-400">Click again to hide details.</p>
+                        <p className="text-[11px] text-gray-400 dark:text-gray-500">Click again to hide details.</p>
                       </div>
                     )}
                   </CardContent>
@@ -969,53 +1087,57 @@ export default function Portfolio() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <span className="text-pink-500 font-medium mb-2 block">Live from Instagram</span>
-            <h2 className="text-3xl md:text-5xl font-bold mb-4 font-[var(--font-playfair)] text-gray-800">
+            <span className="text-pink-500 dark:text-pink-400 font-medium mb-2 block">Live from Instagram</span>
+            <h2 className="text-3xl md:text-5xl font-sans font-bold mb-4 text-gray-800 dark:text-gray-100">
               Instagram Highlights
             </h2>
             <div className="w-24 h-1 bg-gradient-to-r from-pink-500 to-purple-500 mx-auto rounded-full" />
-            <p className="text-gray-600 mt-6 max-w-2xl mx-auto">
+            <p className="text-gray-600 dark:text-gray-400 mt-6 max-w-2xl mx-auto">
               Selected posts and reels embedded directly from my Instagram profile @sana_zi9t9.
             </p>
           </motion.div>
           {instagramEmbeds.length > 0 ? (
             <div
-              className="max-w-5xl mx-auto"
-              onMouseEnter={() => setIsInstagramHovered(true)}
-              onMouseLeave={() => setIsInstagramHovered(false)}
+              className="max-w-7xl mx-auto"
+              ref={instagramContainerRef}
+              onMouseEnter={() => {
+                instagramHoveredRef.current = true
+              }}
+              onMouseLeave={() => {
+                instagramHoveredRef.current = false
+              }}
             >
               <div className="relative">
                 <motion.div
                   key={activeInstagramIndex}
-                  initial={{ opacity: 0, x: 40 }}
+                  initial={{ opacity: 0, x: 24 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -40 }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
-                  className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+                  exit={{ opacity: 0, x: -24 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  className="grid gap-6 md:grid-cols-2 xl:grid-cols-3"
                 >
                   {Array.from({ length: Math.min(3, instagramEmbeds.length) }).map((_, offset) => {
                     const index = (activeInstagramIndex + offset) % instagramEmbeds.length
                     const item = instagramEmbeds[index]
                     return (
-                      <motion.div
+                      <div
                         key={item.url}
-                        whileHover={{ y: -4, scale: 1.01 }}
-                        transition={{ duration: 0.25 }}
-                        className="group rounded-3xl bg-gradient-to-br from-pink-100 via-rose-50 to-purple-100 p-[1px] shadow-2xl shadow-pink-200/60"
+                        className="group rounded-3xl bg-gradient-to-br from-pink-200 via-rose-100 to-purple-200 dark:from-pink-800/60 dark:via-rose-800/40 dark:to-purple-800/60 p-[3px] shadow-2xl shadow-pink-300/50 dark:shadow-pink-900/40 hover:shadow-pink-400/70 dark:hover:shadow-pink-700/60 transition-all duration-300 hover:scale-[1.01]"
                       >
-                        <div className="relative rounded-3xl bg-white overflow-hidden">
+                        <div className="relative rounded-[22px] bg-white dark:bg-gray-900 overflow-hidden">
                           <div
                             className="w-full"
+                            style={{ minHeight: '580px' }}
                             dangerouslySetInnerHTML={{
-                              __html: `<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="${item.url}" data-instgrm-version="14" style="margin:0 auto; max-width:540px; width:100%;"></blockquote>`,
+                              __html: `<blockquote class=\"instagram-media\" data-instgrm-captioned data-instgrm-permalink=\"${item.url}\" data-instgrm-version=\"14\" style=\"margin:0 auto; max-width:100%; width:100%; min-height:580px;\"></blockquote>` ,
                             }}
                           />
-                          <div className="pointer-events-none absolute top-3 right-3 flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-[11px] font-medium text-pink-600 shadow-md">
-                            <Instagram size={14} className="text-pink-500" />
+                          <div className="pointer-events-none absolute top-4 right-4 flex items-center gap-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 px-4 py-1.5 text-xs font-semibold text-white shadow-lg">
+                            <Instagram size={14} className="text-white" />
                             <span className="hidden sm:inline">Instagram Highlight</span>
                           </div>
                         </div>
-                      </motion.div>
+                      </div>
                     )
                   })}
                 </motion.div>
@@ -1033,7 +1155,7 @@ export default function Portfolio() {
                       }
                       aria-label="Previous Instagram slides"
                     >
-                      <div className="rounded-full bg-white/90 shadow-lg border border-pink-100 p-2 text-pink-500 hover:bg-pink-50 transition-colors">
+                      <div className="rounded-full bg-white/90 dark:bg-gray-800/90 shadow-lg border border-pink-100 dark:border-pink-900/50 p-2 text-pink-500 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/30 transition-colors">
                         <span className="inline-block -translate-x-[1px]">‹</span>
                       </div>
                     </button>
@@ -1045,7 +1167,7 @@ export default function Portfolio() {
                       }
                       aria-label="Next Instagram slides"
                     >
-                      <div className="rounded-full bg-white/90 shadow-lg border border-pink-100 p-2 text-pink-500 hover:bg-pink-50 transition-colors">
+                      <div className="rounded-full bg-white/90 dark:bg-gray-800/90 shadow-lg border border-pink-100 dark:border-pink-900/50 p-2 text-pink-500 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/30 transition-colors">
                         <span className="inline-block translate-x-[1px]">›</span>
                       </div>
                     </button>
@@ -1064,32 +1186,32 @@ export default function Portfolio() {
                         className={`h-2 rounded-full transition-all duration-200 ${
                           index === activeInstagramIndex
                             ? "w-5 bg-pink-500"
-                            : "w-2 bg-pink-200 hover:bg-pink-300"
+                            : "w-2 bg-pink-200 dark:bg-pink-800 hover:bg-pink-300 dark:hover:bg-pink-700"
                         }`}
                         aria-label={`Go to Instagram slide ${index + 1}`}
                       />
                     ))}
                   </div>
-                  <p className="text-center text-[11px] text-gray-400">
+                  <p className="text-center text-[11px] text-gray-400 dark:text-gray-500">
                     Carousel auto-scrolls every few seconds. Hover to pause.
                   </p>
                 </div>
               )}
             </div>
           ) : (
-            <div className="max-w-2xl mx-auto text-center text-gray-500 text-sm">
+            <div className="max-w-2xl mx-auto text-center text-gray-500 dark:text-gray-400 text-sm">
               No Instagram embeds configured yet. Add URLs to lib/instagram-embeds.json to show posts here.
             </div>
           )}
 
           <motion.div
-            className="mt-10 max-w-xl mx-auto text-center text-gray-600 text-sm bg-white/80 backdrop-blur-sm rounded-2xl p-5 shadow-md"
+            className="mt-10 max-w-xl mx-auto text-center text-gray-600 dark:text-gray-400 text-sm bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-5 shadow-md"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
             viewport={{ once: true }}
           >
-            <p className="mb-2 font-medium text-gray-800">Follow along on Instagram</p>
+            <p className="mb-2 font-medium text-gray-800 dark:text-gray-100">Follow along on Instagram</p>
             <p className="mb-4">
               These embeds come directly from my Instagram profile. You can update or add more posts anytime by
               replacing the embed URLs in the portfolio code.
@@ -1117,8 +1239,8 @@ export default function Portfolio() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <span className="text-pink-500 font-medium mb-2 block">What I work with</span>
-            <h2 className="text-3xl md:text-5xl font-bold mb-4 font-[var(--font-playfair)] text-gray-800">
+            <span className="text-pink-500 dark:text-pink-400 font-medium mb-2 block">What I work with</span>
+            <h2 className="text-3xl md:text-5xl font-sans font-bold mb-4 text-gray-800 dark:text-gray-100">
               Skills & Tools
             </h2>
             <div className="w-24 h-1 bg-gradient-to-r from-pink-500 to-purple-500 mx-auto rounded-full" />
@@ -1132,9 +1254,9 @@ export default function Portfolio() {
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
             >
-              <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm h-full">
+              <Card className="border-0 shadow-xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm h-full">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-3 text-gray-800">
+                  <CardTitle className="flex items-center gap-3 text-gray-800 dark:text-gray-100">
                     <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-rose-500 rounded-xl flex items-center justify-center">
                       <Palette className="text-white" size={20} />
                     </div>
@@ -1144,14 +1266,14 @@ export default function Portfolio() {
                 <CardContent>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     {[
-                      { name: "Figma", icon: SiFigma, color: "text-purple-500" },
-                      { name: "Adobe XD", icon: SiAdobexd, color: "text-pink-500" },
-                      { name: "Canva", icon: SiCanva, color: "text-blue-500" },
-                      { name: "Photoshop", icon: SiAdobephotoshop, color: "text-blue-600" },
+                      { name: "Figma", icon: SiFigma, color: "text-purple-500 dark:text-purple-400" },
+                      { name: "Adobe XD", icon: SiAdobexd, color: "text-pink-500 dark:text-pink-400" },
+                      { name: "Canva", icon: SiCanva, color: "text-cyan-500 dark:text-cyan-400" },
+                      { name: "Photoshop", icon: SiAdobephotoshop, color: "text-blue-500 dark:text-blue-400" },
                     ].map((tool, index) => (
                       <motion.div
                         key={tool.name}
-                        className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-xl p-4 text-center hover:shadow-lg transition-all"
+                        className="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-900/30 dark:to-purple-900/30 rounded-xl p-4 text-center hover:shadow-lg transition-all"
                         initial={{ opacity: 0, scale: 0.8 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         transition={{ delay: index * 0.1 }}
@@ -1159,7 +1281,7 @@ export default function Portfolio() {
                         whileHover={{ scale: 1.05, y: -5 }}
                       >
                         <tool.icon className={`text-3xl mx-auto mb-2 ${tool.color}`} />
-                        <span className="text-sm font-medium text-gray-700">{tool.name}</span>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{tool.name}</span>
                       </motion.div>
                     ))}
                   </div>
@@ -1174,9 +1296,9 @@ export default function Portfolio() {
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
             >
-              <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm h-full">
+              <Card className="border-0 shadow-xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm h-full">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-3 text-gray-800">
+                  <CardTitle className="flex items-center gap-3 text-gray-800 dark:text-gray-100">
                     <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-fuchsia-500 rounded-xl flex items-center justify-center">
                       <span className="text-white font-bold">{"</>"}</span>
                     </div>
@@ -1186,16 +1308,16 @@ export default function Portfolio() {
                 <CardContent>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     {[
-                      { name: "Python", icon: SiPython, color: "text-yellow-500" },
-                      { name: "JavaScript", icon: SiJavascript, color: "text-yellow-400" },
-                      { name: "Java", icon: FaJava, color: "text-orange-500" },
-                      { name: "C++", icon: SiCplusplus, color: "text-blue-500" },
-                      { name: "HTML", icon: SiHtml5, color: "text-orange-600" },
-                      { name: "CSS", icon: SiCss3, color: "text-blue-600" },
+                      { name: "Python", icon: SiPython, color: "text-sky-500 dark:text-sky-400" },
+                      { name: "JavaScript", icon: SiJavascript, color: "text-yellow-500 dark:text-yellow-400" },
+                      { name: "TypeScript", icon: SiTypescript, color: "text-blue-600 dark:text-blue-400" },
+                      { name: "Java", icon: FaJava, color: "text-red-500 dark:text-red-400" },
+                      { name: "HTML5", icon: SiHtml5, color: "text-orange-500 dark:text-orange-400" },
+                      { name: "CSS3", icon: SiCss3, color: "text-blue-500 dark:text-blue-400" },
                     ].map((lang, index) => (
                       <motion.div
                         key={lang.name}
-                        className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 text-center hover:shadow-lg transition-all"
+                        className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/40 dark:to-pink-900/40 rounded-xl p-4 text-center hover:shadow-lg dark:hover:shadow-pink-900/30 transition-all"
                         initial={{ opacity: 0, scale: 0.8 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         transition={{ delay: index * 0.1 }}
@@ -1203,7 +1325,7 @@ export default function Portfolio() {
                         whileHover={{ scale: 1.05, y: -5 }}
                       >
                         <lang.icon className={`text-3xl mx-auto mb-2 ${lang.color}`} />
-                        <span className="text-sm font-medium text-gray-700">{lang.name}</span>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{lang.name}</span>
                       </motion.div>
                     ))}
                   </div>
@@ -1220,23 +1342,56 @@ export default function Portfolio() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <h3 className="text-2xl font-bold text-center text-gray-800 mb-8">Certifications</h3>
+            <h3 className="text-2xl font-bold text-center text-gray-800 dark:text-gray-100 mb-8">Certifications</h3>
             <div className="grid md:grid-cols-2 gap-6">
               {[
-                { title: "MEAN Stack Development", icon: SiMongodb, color: "from-green-500 to-teal-500" },
-                { title: "UI/UX Design", icon: SiFigma, color: "from-pink-500 to-purple-500" },
+                {
+                  title: "MEAN Stack Development Certification",
+                  icon: SiMongodb,
+                  color: "from-green-500 to-teal-500",
+                  bullets: [
+                    "Built full-stack apps using MongoDB, Express.js, Angular, and Node.js.",
+                    "Learned RESTful API design, NoSQL concepts, and front-end/back-end integration.",
+                  ],
+                },
+                {
+                  title: "UI/UX Design Certification",
+                  icon: SiFigma,
+                  color: "from-pink-500 to-purple-500",
+                  bullets: [
+                    "Studied user-centered design, usability principles, and modern UI trends.",
+                    "Created wireframes and interactive prototypes in Figma and Adobe XD.",
+                    "Applied user research and testing to improve overall experience.",
+                  ],
+                },
+                {
+                  title: "Agile Project Tracking Using ClickUp",
+                  icon: SiMongodb,
+                  color: "from-sky-500 to-indigo-500",
+                  bullets: [
+                    "Gained hands-on experience managing agile workflows in ClickUp.",
+                    "Practiced task tracking, sprint planning, and team collaboration.",
+                  ],
+                },
               ].map((cert, index) => (
                 <motion.div
                   key={cert.title}
-                  className="glass rounded-2xl p-6 flex items-center gap-4"
+                  className="glass rounded-2xl p-6 flex gap-4"
                   whileHover={{ scale: 1.02 }}
                 >
                   <div
-                    className={`w-12 h-12 bg-gradient-to-br ${cert.color} rounded-xl flex items-center justify-center shadow-lg`}
+                    className={`mt-1 w-12 h-12 bg-gradient-to-br ${cert.color} rounded-xl flex items-center justify-center shadow-lg flex-shrink-0`}
                   >
                     <cert.icon className="text-white text-xl" />
                   </div>
-                  <span className="font-semibold text-gray-800">{cert.title}</span>
+                  <div className="space-y-1">
+                    <p className="font-semibold text-gray-800 dark:text-gray-100">{cert.title}</p>
+                    <ul className="list-disc list-inside text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                      {cert.bullets.map((b) => (
+                        <li key={b}>{b}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </motion.div>
               ))}
             </div>
@@ -1245,7 +1400,7 @@ export default function Portfolio() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="py-20 md:py-28 bg-gradient-to-b from-white/50 to-pink-50">
+      <section id="contact" className="py-20 md:py-28 bg-gradient-to-b from-white/50 to-pink-50 dark:from-gray-900/50 dark:to-purple-950/30">
         <div className="container mx-auto px-4 md:px-6">
           <motion.div
             className="text-center mb-16"
@@ -1254,12 +1409,12 @@ export default function Portfolio() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <span className="text-pink-500 font-medium mb-2 block">Get in touch</span>
-            <h2 className="text-3xl md:text-5xl font-bold mb-4 font-[var(--font-playfair)] text-gray-800">
+            <span className="text-pink-500 dark:text-pink-400 font-medium mb-2 block">Get in touch</span>
+            <h2 className="text-3xl md:text-5xl font-sans font-bold mb-4 text-gray-800 dark:text-gray-100">
               Let's Connect
             </h2>
             <div className="w-24 h-1 bg-gradient-to-r from-pink-500 to-purple-500 mx-auto rounded-full" />
-            <p className="text-gray-600 mt-6 max-w-xl mx-auto">
+            <p className="text-gray-600 dark:text-gray-400 mt-6 max-w-xl mx-auto">
               I'm always excited to discuss new opportunities and collaborate on creative projects!
             </p>
           </motion.div>
@@ -1273,7 +1428,7 @@ export default function Portfolio() {
               viewport={{ once: true }}
               className="space-y-6"
             >
-              <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden">
+              <Card className="border-0 shadow-xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm overflow-hidden">
                 <div className="h-2 bg-gradient-to-r from-pink-500 to-purple-500" />
                 <CardContent className="p-6 md:p-8 space-y-6">
                   {[
@@ -1301,22 +1456,22 @@ export default function Portfolio() {
                       transition={{ delay: index * 0.1 }}
                       viewport={{ once: true }}
                     >
-                      <div className="w-12 h-12 bg-gradient-to-br from-pink-100 to-purple-100 rounded-xl flex items-center justify-center">
-                        <item.icon className="text-pink-500" size={20} />
+                      <div className="w-12 h-12 bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/50 dark:to-purple-900/50 rounded-xl flex items-center justify-center">
+                        <item.icon className="text-pink-500 dark:text-pink-400" size={20} />
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500">{item.label}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{item.label}</p>
                         {item.href ? (
                           <a
                             href={item.href}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="font-medium text-gray-800 hover:text-pink-500 transition-colors"
+                            className="font-medium text-gray-800 dark:text-gray-100 hover:text-pink-500 dark:hover:text-pink-400 transition-colors"
                           >
                             {item.value}
                           </a>
                         ) : (
-                          <p className="font-medium text-gray-800">{item.value}</p>
+                          <p className="font-medium text-gray-800 dark:text-gray-100">{item.value}</p>
                         )}
                       </div>
                     </motion.div>
@@ -1332,7 +1487,7 @@ export default function Portfolio() {
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
             >
-              <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden">
+              <Card className="border-0 shadow-xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm overflow-hidden">
                 <div className="h-2 bg-gradient-to-r from-purple-500 to-pink-500" />
                 <CardContent className="p-6 md:p-8">
                   <form onSubmit={handleSubmit} className="space-y-5">
@@ -1340,41 +1495,41 @@ export default function Portfolio() {
                     <input type="hidden" name="_template" value="table" />
 
                     <div>
-                      <label className="text-sm font-medium text-gray-700 mb-2 block">Your Name</label>
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">Your Name</label>
                       <Input
                         name="name"
                         placeholder="Enter your name"
                         required
-                        className="border-pink-100 focus:border-pink-300 rounded-xl py-6"
+                        className="border-pink-100 dark:border-pink-900/50 focus:border-pink-300 dark:focus:border-pink-500 rounded-xl py-6 dark:bg-gray-900/50 dark:text-gray-100 dark:placeholder-gray-500"
                       />
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-700 mb-2 block">Your Email</label>
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">Your Email</label>
                       <Input
                         name="email"
                         type="email"
                         placeholder="Enter your email"
                         required
-                        className="border-pink-100 focus:border-pink-300 rounded-xl py-6"
+                        className="border-pink-100 dark:border-pink-900/50 focus:border-pink-300 dark:focus:border-pink-500 rounded-xl py-6 dark:bg-gray-900/50 dark:text-gray-100 dark:placeholder-gray-500"
                       />
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-700 mb-2 block">Subject</label>
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">Subject</label>
                       <Input
                         name="subject"
                         placeholder="What's this about?"
                         required
-                        className="border-pink-100 focus:border-pink-300 rounded-xl py-6"
+                        className="border-pink-100 dark:border-pink-900/50 focus:border-pink-300 dark:focus:border-pink-500 rounded-xl py-6 dark:bg-gray-900/50 dark:text-gray-100 dark:placeholder-gray-500"
                       />
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-700 mb-2 block">Message</label>
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">Message</label>
                       <Textarea
                         name="message"
                         placeholder="Tell me about your project..."
                         rows={4}
                         required
-                        className="border-pink-100 focus:border-pink-300 rounded-xl resize-none"
+                        className="border-pink-100 dark:border-pink-900/50 focus:border-pink-300 dark:focus:border-pink-500 rounded-xl resize-none dark:bg-gray-900/50 dark:text-gray-100 dark:placeholder-gray-500"
                       />
                     </div>
                     <Button
@@ -1414,12 +1569,12 @@ export default function Portfolio() {
         <div className="container mx-auto px-4 md:px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <motion.p
-              className="text-sm text-center md:text-left"
+              className="text-sm text-center flex-1"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
             >
-              © 2025 Sana Hafeez. Crafted with <Heart className="inline w-4 h-4 text-pink-200 mx-1" /> and creativity
+              © {new Date().getFullYear()} Sana Hafeez. All rights reserved.
             </motion.p>
             <div className="flex gap-4">
               <motion.a
