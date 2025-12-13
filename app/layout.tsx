@@ -16,6 +16,7 @@ const playfair = Playfair_Display({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://sanaz9t9.vercel.app/"),
   title: "Sana Hafeez | UI/UX Designer & Creative Enthusiast",
   description:
     "UI/UX Designer, Digital Marketing & Graphic Design Enthusiast - Crafting beautiful digital experiences with creativity and passion",
