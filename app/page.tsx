@@ -13,6 +13,7 @@ import {
   Mail,
   Phone,
   Linkedin,
+  Instagram,
   MapPin,
   Calendar,
   ExternalLink,
@@ -44,12 +45,16 @@ import {
   SiAdobephotoshop,
 } from "react-icons/si"
 import { FaJava } from "react-icons/fa"
+import instagramEmbeds from "@/lib/instagram-embeds.json"
 
 export default function Portfolio() {
   const [activeSection, setActiveSection] = useState("home")
   const [isMobile, setIsMobile] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [formStatus, setFormStatus] = useState<"idle" | "sending" | "sent" | "error">("idle")
+  const [selectedProjectIndex, setSelectedProjectIndex] = useState<number | null>(null)
+  const [activeInstagramIndex, setActiveInstagramIndex] = useState(0)
+  const [isInstagramHovered, setIsInstagramHovered] = useState(false)
   const { scrollYProgress } = useScroll()
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"])
 
@@ -61,8 +66,56 @@ export default function Portfolio() {
   }, [])
 
   useEffect(() => {
+    // Load Instagram embed script once so blockquotes render as embeds
+    if (typeof window === "undefined") return
+
+    const scriptId = "instagram-embed-script"
+    const existing = document.getElementById(scriptId) as HTMLScriptElement | null
+
+    if (existing) {
+      ;(window as any).instgrm?.Embeds?.process()
+      return
+    }
+
+    const script = document.createElement("script")
+    script.id = scriptId
+    script.src = "https://www.instagram.com/embed.js"
+    script.async = true
+    script.onload = () => {
+      ;(window as any).instgrm?.Embeds?.process()
+    }
+    document.body.appendChild(script)
+  }, [])
+
+  useEffect(() => {
+    // Re-process embeds when the active Instagram slide changes
+    if (typeof window === "undefined") return
+    ;(window as any).instgrm?.Embeds?.process()
+  }, [activeInstagramIndex])
+
+  useEffect(() => {
+    if (instagramEmbeds.length <= 1) return
+    if (isInstagramHovered) return
+
+    const interval = setInterval(() => {
+      setActiveInstagramIndex((prev) => (prev + 1) % instagramEmbeds.length)
+    }, 5000)
+
+    return () => clearInterval(interval)
+  }, [isInstagramHovered])
+
+  useEffect(() => {
     const handleScroll = () => {
-      const sections = ["home", "about", "education", "experience", "projects", "skills", "contact"]
+      const sections = [
+        "home",
+        "about",
+        "education",
+        "experience",
+        "projects",
+        "instagram",
+        "skills",
+        "contact",
+      ]
       const scrollPosition = window.scrollY + 100
       for (const section of sections) {
         const element = document.getElementById(section)
@@ -120,7 +173,16 @@ export default function Portfolio() {
     <img src="/images/vscode-logo.png" alt="VS Code" className={`${className} object-contain`} />
   )
 
-  const navigationItems = ["home", "about", "education", "experience", "projects", "skills", "contact"]
+  const navigationItems = [
+    "home",
+    "about",
+    "education",
+    "experience",
+    "projects",
+    "instagram",
+    "skills",
+    "contact",
+  ]
 
   // Focus areas for creative fields
   const focusAreas = [
@@ -800,6 +862,30 @@ export default function Portfolio() {
                 tech: ["Cisco", "Python", "WireGuard", "Networking"],
                 gradient: "from-purple-500 to-fuchsia-500",
               },
+              {
+                title: "Habit Tracking App",
+                type: "Mobile / Web App",
+                date: "2024",
+                description:
+                  "A simple and clean habit tracker that helps users build consistency with daily routines.",
+                tech: ["React", "TypeScript", "CSS"],
+                gradient: "from-emerald-500 to-teal-500",
+                link: "https://github.com/sanahafeez9t9/HabitTrackingApp",
+                details:
+                  "This project lets users create, update, and monitor daily habits with progress visualization and a friendly UI, focusing on usability and motivation.",
+              },
+              {
+                title: "Personal Portfolio Website",
+                type: "Web Portfolio",
+                date: "2025",
+                description:
+                  "My personal portfolio built with Next.js, showcasing projects, skills, and a live Instagram section.",
+                tech: ["Next.js", "TypeScript", "Tailwind CSS", "Framer Motion"],
+                gradient: "from-rose-500 to-purple-500",
+                link: "https://github.com/sanahafeez9t9/My_Portfolio",
+                details:
+                  "This responsive portfolio highlights my design, development, and marketing skills with smooth animations, themed sections, and custom Instagram embeds.",
+              },
             ].map((project, index) => (
               <motion.div
                 key={project.title}
@@ -808,7 +894,12 @@ export default function Portfolio() {
                 transition={{ duration: 0.8, delay: index * 0.15 }}
                 viewport={{ once: true }}
               >
-                <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden group hover:shadow-2xl transition-all h-full">
+                <Card
+                  className="border-0 shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden group hover:shadow-2xl transition-all h-full cursor-pointer"
+                  onClick={() =>
+                    setSelectedProjectIndex((prev) => (prev === index ? null : index))
+                  }
+                >
                   <div className={`h-32 bg-gradient-to-br ${project.gradient} relative overflow-hidden`}>
                     <div className="absolute inset-0 bg-black/10" />
                     <motion.div
@@ -834,11 +925,185 @@ export default function Portfolio() {
                         </Badge>
                       ))}
                     </div>
+                    {selectedProjectIndex === index && (
+                      <div className="mt-5 border-t border-pink-100 pt-4 space-y-3 text-sm text-gray-700">
+                        {"details" in project && project.details && (
+                          <p>{project.details}</p>
+                        )}
+                        {"link" in project && project.link && (
+                          <div className="flex flex-wrap gap-3">
+                            <Button
+                              asChild
+                              size="sm"
+                              className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white"
+                            >
+                              <a
+                                href={project.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <ExternalLink className="mr-1" size={14} />
+                                View on GitHub
+                              </a>
+                            </Button>
+                          </div>
+                        )}
+                        <p className="text-[11px] text-gray-400">Click again to hide details.</p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Instagram Section */}
+      <section id="instagram" className="py-20 md:py-28">
+        <div className="container mx-auto px-4 md:px-6">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <span className="text-pink-500 font-medium mb-2 block">Live from Instagram</span>
+            <h2 className="text-3xl md:text-5xl font-bold mb-4 font-[var(--font-playfair)] text-gray-800">
+              Instagram Highlights
+            </h2>
+            <div className="w-24 h-1 bg-gradient-to-r from-pink-500 to-purple-500 mx-auto rounded-full" />
+            <p className="text-gray-600 mt-6 max-w-2xl mx-auto">
+              Selected posts and reels embedded directly from my Instagram profile @sana_zi9t9.
+            </p>
+          </motion.div>
+          {instagramEmbeds.length > 0 ? (
+            <div
+              className="max-w-5xl mx-auto"
+              onMouseEnter={() => setIsInstagramHovered(true)}
+              onMouseLeave={() => setIsInstagramHovered(false)}
+            >
+              <div className="relative">
+                <motion.div
+                  key={activeInstagramIndex}
+                  initial={{ opacity: 0, x: 40 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -40 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+                >
+                  {Array.from({ length: Math.min(3, instagramEmbeds.length) }).map((_, offset) => {
+                    const index = (activeInstagramIndex + offset) % instagramEmbeds.length
+                    const item = instagramEmbeds[index]
+                    return (
+                      <motion.div
+                        key={item.url}
+                        whileHover={{ y: -4, scale: 1.01 }}
+                        transition={{ duration: 0.25 }}
+                        className="group rounded-3xl bg-gradient-to-br from-pink-100 via-rose-50 to-purple-100 p-[1px] shadow-2xl shadow-pink-200/60"
+                      >
+                        <div className="relative rounded-3xl bg-white overflow-hidden">
+                          <div
+                            className="w-full"
+                            dangerouslySetInnerHTML={{
+                              __html: `<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="${item.url}" data-instgrm-version="14" style="margin:0 auto; max-width:540px; width:100%;"></blockquote>`,
+                            }}
+                          />
+                          <div className="pointer-events-none absolute top-3 right-3 flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-[11px] font-medium text-pink-600 shadow-md">
+                            <Instagram size={14} className="text-pink-500" />
+                            <span className="hidden sm:inline">Instagram Highlight</span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )
+                  })}
+                </motion.div>
+
+                {/* Desktop arrow controls */}
+                {instagramEmbeds.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      className="hidden md:flex absolute inset-y-0 -left-4 items-center justify-center"
+                      onClick={() =>
+                        setActiveInstagramIndex((prev) =>
+                          prev === 0 ? instagramEmbeds.length - 1 : prev - 1,
+                        )
+                      }
+                      aria-label="Previous Instagram slides"
+                    >
+                      <div className="rounded-full bg-white/90 shadow-lg border border-pink-100 p-2 text-pink-500 hover:bg-pink-50 transition-colors">
+                        <span className="inline-block -translate-x-[1px]">‹</span>
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      className="hidden md:flex absolute inset-y-0 -right-4 items-center justify-center"
+                      onClick={() =>
+                        setActiveInstagramIndex((prev) => (prev + 1) % instagramEmbeds.length)
+                      }
+                      aria-label="Next Instagram slides"
+                    >
+                      <div className="rounded-full bg-white/90 shadow-lg border border-pink-100 p-2 text-pink-500 hover:bg-pink-50 transition-colors">
+                        <span className="inline-block translate-x-[1px]">›</span>
+                      </div>
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {instagramEmbeds.length > 1 && (
+                <div className="mt-5 flex flex-col items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    {instagramEmbeds.map((_, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => setActiveInstagramIndex(index)}
+                        className={`h-2 rounded-full transition-all duration-200 ${
+                          index === activeInstagramIndex
+                            ? "w-5 bg-pink-500"
+                            : "w-2 bg-pink-200 hover:bg-pink-300"
+                        }`}
+                        aria-label={`Go to Instagram slide ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-center text-[11px] text-gray-400">
+                    Carousel auto-scrolls every few seconds. Hover to pause.
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="max-w-2xl mx-auto text-center text-gray-500 text-sm">
+              No Instagram embeds configured yet. Add URLs to lib/instagram-embeds.json to show posts here.
+            </div>
+          )}
+
+          <motion.div
+            className="mt-10 max-w-xl mx-auto text-center text-gray-600 text-sm bg-white/80 backdrop-blur-sm rounded-2xl p-5 shadow-md"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+            viewport={{ once: true }}
+          >
+            <p className="mb-2 font-medium text-gray-800">Follow along on Instagram</p>
+            <p className="mb-4">
+              These embeds come directly from my Instagram profile. You can update or add more posts anytime by
+              replacing the embed URLs in the portfolio code.
+            </p>
+            <Button
+              asChild
+              className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white"
+            >
+              <a href="https://www.instagram.com/sana_zi9t9" target="_blank" rel="noopener noreferrer">
+                <Instagram className="mr-2" size={18} />
+                Visit my Instagram
+              </a>
+            </Button>
+          </motion.div>
         </div>
       </section>
 
