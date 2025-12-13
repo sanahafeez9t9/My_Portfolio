@@ -1,10 +1,7 @@
 {
-  "buildCommand": "next build",
-  "devCommand": "next dev",
-  "installCommand": "npm install",
   "framework": "nextjs",
-  "outputDirectory": ".next",
-  "regions": ["iad1"],
+  "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "next build",
   "headers": [
     {
       "source": "/(.*)",
@@ -16,24 +13,11 @@
         {
           "key": "X-Frame-Options",
           "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
         }
       ]
     },
     {
       "source": "/_next/static/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/(.*)\\.(css|js)",
       "headers": [
         {
           "key": "Cache-Control",
