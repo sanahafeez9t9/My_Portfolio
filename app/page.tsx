@@ -1,105 +1,62 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Mail, Phone, Linkedin, MapPin, Calendar, ExternalLink, Heart, Sparkles, Flower2, Menu, X } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Mail,
+  Phone,
+  Linkedin,
+  MapPin,
+  Calendar,
+  ExternalLink,
+  Heart,
+  Sparkles,
+  Flower2,
+  Menu,
+  X,
+  Send,
+  Github,
+  Palette,
+  Star,
+  Wand2,
+  MousePointer2,
+  Megaphone,
+  PenTool,
+  Loader2,
+} from "lucide-react"
 import {
   SiPython,
   SiJavascript,
   SiCplusplus,
   SiHtml5,
   SiCss3,
-  SiMysql,
-  SiCisco,
-  SiGooglecolab,
-  SiAndroidstudio,
   SiMongodb,
-  SiExpress,
-  SiAngular,
-  SiNodedotjs,
   SiFigma,
   SiAdobexd,
+  SiCanva,
+  SiAdobephotoshop,
 } from "react-icons/si"
-import { FaJava } from "react-icons/fa";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  navigationItems,
-  about,
-  education,
-  experience,
-  projects,
-  skills,
-  contact,
-} from "@/lib/data"
+import { FaJava } from "react-icons/fa"
 
 export default function Portfolio() {
   const [activeSection, setActiveSection] = useState("home")
   const [isMobile, setIsMobile] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [formStatus, setFormStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [formStatus, setFormStatus] = useState<"idle" | "sending" | "sent" | "error">("idle")
   const { scrollYProgress } = useScroll()
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"])
 
-  const formSchema = z.object({
-    name: z.string().min(2, "Name must be at least 2 characters."),
-    email: z.string().email("Invalid email address."),
-    message: z.string().min(10, "Message must be at least 10 characters."),
-  });
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      message: "",
-    },
-  });
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setFormStatus("sending");
-    try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      });
-
-      if (response.ok) {
-        setFormStatus("success");
-        form.reset();
-      } else {
-        setFormStatus("error");
-      }
-    } catch (error) {
-      setFormStatus("error");
-    }
-  }
-
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
     checkMobile()
     window.addEventListener("resize", checkMobile)
-
     return () => window.removeEventListener("resize", checkMobile)
   }, [])
 
@@ -107,7 +64,6 @@ export default function Portfolio() {
     const handleScroll = () => {
       const sections = ["home", "about", "education", "experience", "projects", "skills", "contact"]
       const scrollPosition = window.scrollY + 100
-
       for (const section of sections) {
         const element = document.getElementById(section)
         if (element) {
@@ -119,154 +75,269 @@ export default function Portfolio() {
         }
       }
     }
-
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
   const scrollToSection = (sectionId: string) => {
-    console.log(`Navigating to section: ${sectionId}`) // Debug log
     const element = document.getElementById(sectionId)
     if (element) {
-      element.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-        inline: "nearest",
-      })
-      setMobileMenuOpen(false) // Close mobile menu when navigating
-      setActiveSection(sectionId) // Update active section immediately
-    } else {
-      console.error(`Element with id '${sectionId}' not found`)
+      element.scrollIntoView({ behavior: "smooth", block: "start" })
+      setMobileMenuOpen(false)
+      setActiveSection(sectionId)
     }
   }
 
-  const toggleMobileMenu = () => {
-    console.log(`Toggling mobile menu. Current state: ${mobileMenuOpen}`) // Debug log
-    setMobileMenuOpen((prev) => !prev)
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setFormStatus("sending")
+
+    const form = e.currentTarget
+    const formData = new FormData(form)
+
+    try {
+      const response = await fetch("https://formsubmit.co/ajax/sanahafeez8oct@gmail.com", {
+        method: "POST",
+        headers: { Accept: "application/json" },
+        body: formData,
+      })
+
+      if (response.ok) {
+        setFormStatus("sent")
+        form.reset()
+        setTimeout(() => setFormStatus("idle"), 3000)
+      } else {
+        setFormStatus("error")
+        setTimeout(() => setFormStatus("idle"), 3000)
+      }
+    } catch {
+      setFormStatus("error")
+      setTimeout(() => setFormStatus("idle"), 3000)
+    }
   }
 
-  // Custom VS Code Icon Component
   const VSCodeIcon = ({ className }: { className?: string }) => (
     <img src="/images/vscode-logo.png" alt="VS Code" className={`${className} object-contain`} />
   )
 
   const navigationItems = ["home", "about", "education", "experience", "projects", "skills", "contact"]
 
+  // Focus areas for creative fields
+  const focusAreas = [
+    {
+      icon: Palette,
+      title: "UI/UX Design",
+      description: "Creating intuitive user experiences",
+      color: "from-pink-400 to-rose-500",
+    },
+    {
+      icon: Megaphone,
+      title: "Digital Marketing",
+      description: "Strategic online brand presence",
+      color: "from-purple-400 to-violet-500",
+    },
+    {
+      icon: PenTool,
+      title: "Graphic Design",
+      description: "Visual storytelling & branding",
+      color: "from-fuchsia-400 to-pink-500",
+    },
+  ]
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary">
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 overflow-x-hidden">
+      {/* Dynamic Animated Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        {/* Animated gradient blobs */}
+        <motion.div
+          className="absolute -top-40 -left-40 w-80 h-80 bg-gradient-to-br from-pink-300/40 to-rose-400/30 rounded-full blur-3xl animate-blob"
+          animate={{ x: [0, 30, 0], y: [0, -30, 0] }}
+          transition={{ duration: 15, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute top-1/3 -right-20 w-96 h-96 bg-gradient-to-br from-purple-300/30 to-fuchsia-400/20 rounded-full blur-3xl animate-blob"
+          animate={{ x: [0, -40, 0], y: [0, 40, 0] }}
+          transition={{ duration: 18, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", delay: 2 }}
+        />
+        <motion.div
+          className="absolute -bottom-20 left-1/3 w-72 h-72 bg-gradient-to-br from-rose-300/30 to-pink-400/20 rounded-full blur-3xl animate-blob"
+          animate={{ x: [0, 50, 0], y: [0, -20, 0] }}
+          transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", delay: 4 }}
+        />
+
+        {/* Floating flowers and elements */}
+        {!isMobile && (
+          <>
+            <motion.div
+              className="absolute top-20 left-[10%] text-pink-300/50 animate-float"
+              style={{ animationDelay: "0s" }}
+            >
+              <Flower2 size={45} />
+            </motion.div>
+            <motion.div
+              className="absolute top-40 right-[15%] text-purple-300/40 animate-float-reverse"
+              style={{ animationDelay: "1s" }}
+            >
+              <Sparkles size={35} />
+            </motion.div>
+            <motion.div
+              className="absolute top-[60%] left-[5%] text-rose-300/40 animate-float"
+              style={{ animationDelay: "2s" }}
+            >
+              <Heart size={30} />
+            </motion.div>
+            <motion.div
+              className="absolute top-[30%] right-[8%] text-fuchsia-300/30 animate-float-reverse"
+              style={{ animationDelay: "3s" }}
+            >
+              <Star size={28} />
+            </motion.div>
+            <motion.div
+              className="absolute bottom-[30%] left-[20%] text-pink-300/40 animate-float"
+              style={{ animationDelay: "1.5s" }}
+            >
+              <Wand2 size={32} />
+            </motion.div>
+            <motion.div
+              className="absolute bottom-[20%] right-[25%] text-purple-300/35 animate-float-reverse"
+              style={{ animationDelay: "2.5s" }}
+            >
+              <MousePointer2 size={26} />
+            </motion.div>
+            <motion.div className="absolute top-[45%] left-[40%] text-rose-200/30 animate-sparkle">
+              <Sparkles size={20} />
+            </motion.div>
+            <motion.div
+              className="absolute top-[70%] right-[40%] text-pink-200/25 animate-sparkle"
+              style={{ animationDelay: "1s" }}
+            >
+              <Star size={18} />
+            </motion.div>
+          </>
+        )}
+
+        {/* Mobile simplified background */}
+        {isMobile && (
+          <>
+            <motion.div className="absolute top-20 left-4 text-pink-300/30 animate-float">
+              <Flower2 size={28} />
+            </motion.div>
+            <motion.div className="absolute top-40 right-4 text-purple-300/25 animate-float-reverse">
+              <Sparkles size={22} />
+            </motion.div>
+            <motion.div className="absolute bottom-40 left-8 text-rose-300/25 animate-float">
+              <Heart size={20} />
+            </motion.div>
+          </>
+        )}
+      </div>
+
+      {/* Progress Bar */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-pink-500 via-rose-500 to-purple-500 origin-left z-[60]"
+        style={{ scaleX: scrollYProgress }}
+      />
+
       {/* Navigation */}
       <motion.nav
-        className="fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-md border-b"
+        className="fixed top-0 left-0 right-0 z-50 glass border-b border-pink-100/50"
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
       >
-        <div className="container mx-auto px-6 py-4">
+        <div className="container mx-auto px-4 md:px-6 py-3 md:py-4">
           <div className="flex justify-between items-center">
             <motion.div
-              className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
+              className="text-xl md:text-2xl font-bold font-[var(--font-playfair)]"
               whileHover={{ scale: 1.05 }}
             >
-              Sana Hafeez
+              <span className="bg-gradient-to-r from-pink-600 via-rose-500 to-purple-600 bg-clip-text text-transparent animate-gradient">
+                Sana Hafeez
+              </span>
             </motion.div>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex space-x-8">
+            <div className="hidden md:flex items-center gap-1">
               {navigationItems.map((section) => (
-                <button
+                <motion.button
                   key={section}
                   onClick={() => scrollToSection(section)}
-                  className={`capitalize transition-colors ${
-                    activeSection === section
-                      ? "text-primary font-semibold"
-                      : "text-foreground/70 hover:text-primary"
+                  className={`relative px-4 py-2 capitalize text-sm font-medium rounded-full transition-all ${
+                    activeSection === section ? "text-pink-600" : "text-gray-600 hover:text-pink-500"
                   }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
+                  {activeSection === section && (
+                    <motion.div
+                      layoutId="activeNav"
+                      className="absolute inset-0 bg-pink-100/80 rounded-full -z-10"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
                   {section}
-                </button>
+                </motion.button>
               ))}
             </div>
 
             {/* Mobile Menu Button */}
-            <div className="md:hidden">
-              <motion.button
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  toggleMobileMenu()
-                }}
-                className="text-foreground/70 hover:text-primary p-2 relative z-50"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <AnimatePresence mode="wait">
-                  {mobileMenuOpen ? (
-                    <motion.div
-                      key="close"
-                      initial={{ rotate: -90, opacity: 0 }}
-                      animate={{ rotate: 0, opacity: 1 }}
-                      exit={{ rotate: 90, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <X size={24} />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="menu"
-                      initial={{ rotate: 90, opacity: 0 }}
-                      animate={{ rotate: 0, opacity: 1 }}
-                      exit={{ rotate: -90, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <Menu size={24} />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.button>
-            </div>
+            <motion.button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-full bg-pink-100/80 text-pink-600"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <AnimatePresence mode="wait">
+                {mobileMenuOpen ? (
+                  <motion.div
+                    key="close"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                  >
+                    <X size={22} />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="menu"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                  >
+                    <Menu size={22} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
           </div>
         </div>
 
-        {/* Mobile Menu Dropdown */}
+        {/* Mobile Menu */}
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="md:hidden bg-card/95 backdrop-blur-md border-t overflow-hidden"
+              className="md:hidden glass border-t border-pink-100/50 overflow-hidden"
             >
-              <div className="container mx-auto px-6 py-4">
-                <div className="flex flex-col space-y-4">
-                  {navigationItems.map((section, index) => (
-                    <motion.button
-                      key={section}
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        scrollToSection(section)
-                      }}
-                      className={`capitalize text-left py-4 px-4 rounded-lg transition-all w-full ${
-                        activeSection === section
-                          ? "text-primary font-semibold bg-secondary"
-                          : "text-foreground/70 hover:text-primary hover:bg-muted"
-                      }`}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1, duration: 0.3 }}
-                      whileHover={{ x: 5 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-2 h-2 rounded-full ${activeSection === section ? "bg-primary" : "bg-muted"}`}
-                        />
-                        {section}
-                      </div>
-                    </motion.button>
-                  ))}
-                </div>
+              <div className="container mx-auto px-4 py-4 flex flex-col gap-2">
+                {navigationItems.map((section, index) => (
+                  <motion.button
+                    key={section}
+                    onClick={() => scrollToSection(section)}
+                    className={`w-full text-left px-4 py-3 rounded-xl capitalize font-medium transition-all ${
+                      activeSection === section
+                        ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white"
+                        : "text-gray-600 hover:bg-pink-50"
+                    }`}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    {section}
+                  </motion.button>
+                ))}
               </div>
             </motion.div>
           )}
@@ -274,127 +345,287 @@ export default function Portfolio() {
       </motion.nav>
 
       {/* Hero Section */}
-      <section id="home" className="min-h-screen flex items-center justify-center relative overflow-hidden">
-        <div className="container mx-auto px-6 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }}>
-              <motion.h1
-                className="text-4xl md:text-5xl lg:text-7xl font-bold mb-6"
+      <section id="home" className="min-h-screen flex items-center justify-center relative pt-20">
+        <motion.div style={{ y }} className="absolute inset-0 z-0" />
+
+        <div className="container mx-auto px-4 md:px-6 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+            {/* Text Content */}
+            <motion.div
+              className="text-center lg:text-left order-2 lg:order-1"
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <motion.div
+                className="inline-flex items-center gap-2 px-4 py-2 bg-pink-100/80 rounded-full text-pink-600 text-sm font-medium mb-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.8 }}
+                transition={{ delay: 0.2 }}
               >
-                <span className="bg-gradient-to-r from-primary via-accent to-rose-500 bg-clip-text text-transparent">
-                  Hello, I'm
-                </span>
+                <Sparkles size={16} className="animate-sparkle" />
+                Welcome to my creative space
+              </motion.div>
+
+              <motion.h1
+                className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 leading-tight font-[var(--font-playfair)]"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <span className="text-gray-800">Hi, I'm</span>
                 <br />
-                <span className="text-foreground">Sana Hafeez</span>
+                <span className="bg-gradient-to-r from-pink-500 via-rose-500 to-purple-500 bg-clip-text text-transparent animate-gradient">
+                  Sana Hafeez
+                </span>
               </motion.h1>
 
               <motion.p
-                className="text-lg md:text-xl text-foreground/80 mb-8 leading-relaxed"
+                className="text-lg md:text-xl text-gray-600 mb-4 leading-relaxed"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.8 }}
+                transition={{ delay: 0.4 }}
               >
-                Software Engineering Student & Aspiring Developer
+                UI/UX Designer | Digital Marketing Enthusiast
                 <br />
-                <span className="text-accent font-semibold">Creating beautiful digital experiences</span>
+                <span className="text-pink-500 font-semibold">Crafting beautiful digital experiences</span>
+              </motion.p>
+
+              <motion.p
+                className="text-gray-500 mb-8 max-w-lg mx-auto lg:mx-0"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                Passionate about creating stunning visuals, intuitive interfaces, and strategic digital solutions that
+                make a lasting impact.
               </motion.p>
 
               <motion.div
-                className="flex flex-col sm:flex-row gap-4"
+                className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.8 }}
+                transition={{ delay: 0.6 }}
               >
                 <Button
                   onClick={() => scrollToSection("projects")}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 rounded-full"
+                  className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-8 py-6 rounded-full text-base font-medium shadow-lg shadow-pink-500/25 hover:shadow-xl hover:shadow-pink-500/30 transition-all"
                 >
+                  <Palette className="mr-2" size={18} />
                   View My Work
                 </Button>
                 <Button
                   onClick={() => scrollToSection("contact")}
                   variant="outline"
-                  className="border-border text-primary hover:bg-secondary px-8 py-3 rounded-full"
+                  className="border-2 border-pink-300 text-pink-600 hover:bg-pink-50 px-8 py-6 rounded-full text-base font-medium"
                 >
-                  Get In Touch
+                  <Mail className="mr-2" size={18} />
+                  Let's Connect
                 </Button>
+              </motion.div>
+
+              {/* Social Links */}
+              <motion.div
+                className="flex gap-4 mt-8 justify-center lg:justify-start"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8 }}
+              >
+                <motion.a
+                  href="https://github.com/sanahafeez9t9"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 rounded-full bg-white shadow-lg hover:shadow-xl text-gray-600 hover:text-pink-500 transition-all"
+                  whileHover={{ scale: 1.1, y: -3 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Github size={22} />
+                </motion.a>
+                <motion.a
+                  href="https://linkedin.com/in/sanahafeez"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 rounded-full bg-white shadow-lg hover:shadow-xl text-gray-600 hover:text-pink-500 transition-all"
+                  whileHover={{ scale: 1.1, y: -3 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Linkedin size={22} />
+                </motion.a>
+                <motion.a
+                  href="mailto:sanahafeez8oct@gmail.com"
+                  className="p-3 rounded-full bg-white shadow-lg hover:shadow-xl text-gray-600 hover:text-pink-500 transition-all"
+                  whileHover={{ scale: 1.1, y: -3 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Mail size={22} />
+                </motion.a>
               </motion.div>
             </motion.div>
 
+            {/* Profile Image */}
             <motion.div
-              className="relative order-first lg:order-last"
+              className="relative order-1 lg:order-2 flex justify-center"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3, duration: 0.8 }}
+              transition={{ delay: 0.4, duration: 0.8 }}
             >
-              <div className="relative w-64 h-64 md:w-80 md:h-80 mx-auto">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full" />
-                <div className="absolute inset-4 bg-gradient-to-br from-accent/20 to-primary/20 rounded-full" />
-                <div className="absolute inset-8 bg-card rounded-full shadow-2xl overflow-hidden flex items-center justify-center">
-                  <img
-                    src="/images/sana-avatar.jpg"
-                    alt="Sana Hafeez"
-                    className="w-full h-full object-cover object-center scale-110"
-                  />
-                </div>
+              <div className="relative w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96">
+                {/* Decorative rings */}
+                <motion.div
+                  className="absolute inset-0 border-2 border-dashed border-pink-300/50 rounded-full"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 30, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                />
+                <motion.div
+                  className="absolute inset-4 border-2 border-dashed border-purple-300/40 rounded-full"
+                  animate={{ rotate: -360 }}
+                  transition={{ duration: 25, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                />
+
+                {/* Glow effect */}
+                <div className="absolute inset-8 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full opacity-20 blur-2xl animate-pulse-glow" />
+
+                {/* Main image container */}
+                <motion.div
+                  className="absolute inset-8 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full shadow-2xl overflow-hidden"
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <img src="/images/pic.jpg" alt="Sana Hafeez" className="w-full h-full object-cover object-top" />
+                </motion.div>
+
+                {/* Floating decorations */}
+                <motion.div
+                  className="absolute -top-2 -right-2 md:-top-4 md:-right-4 bg-white p-3 rounded-full shadow-xl"
+                  animate={{ y: [0, -10, 0], rotate: [0, 10, 0] }}
+                  transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY }}
+                >
+                  <Palette className="text-pink-500" size={isMobile ? 18 : 24} />
+                </motion.div>
+                <motion.div
+                  className="absolute -bottom-2 -left-2 md:-bottom-4 md:-left-4 bg-white p-3 rounded-full shadow-xl"
+                  animate={{ y: [0, 10, 0], rotate: [0, -10, 0] }}
+                  transition={{ duration: 5, repeat: Number.POSITIVE_INFINITY }}
+                >
+                  <Heart className="text-rose-500" size={isMobile ? 18 : 24} />
+                </motion.div>
+                <motion.div
+                  className="absolute top-1/2 -right-4 md:-right-8 bg-white p-2 md:p-3 rounded-full shadow-xl"
+                  animate={{ x: [0, 5, 0], y: [0, -5, 0] }}
+                  transition={{ duration: 3.5, repeat: Number.POSITIVE_INFINITY }}
+                >
+                  <Sparkles className="text-purple-500" size={isMobile ? 16 : 20} />
+                </motion.div>
               </div>
             </motion.div>
           </div>
         </div>
+
+        {/* Scroll Indicator */}
+        <motion.div
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+        >
+          <div className="w-6 h-10 border-2 border-pink-300 rounded-full flex justify-center">
+            <motion.div
+              className="w-1.5 h-3 bg-pink-400 rounded-full mt-2"
+              animate={{ y: [0, 12, 0], opacity: [1, 0.3, 1] }}
+              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+            />
+          </div>
+        </motion.div>
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-16 md:py-20 bg-card/50">
-        <div className="container mx-auto px-6">
+      <section id="about" className="py-20 md:py-28 relative">
+        <div className="container mx-auto px-4 md:px-6">
           <motion.div
-            className="text-center mb-12 md:mb-16"
+            className="text-center mb-16"
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              About Me
-            </h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-primary to-accent mx-auto rounded-full" />
+            <span className="text-pink-500 font-medium mb-2 block">Get to know me</span>
+            <h2 className="text-3xl md:text-5xl font-bold mb-4 font-[var(--font-playfair)] text-gray-800">About Me</h2>
+            <div className="w-24 h-1 bg-gradient-to-r from-pink-500 to-purple-500 mx-auto rounded-full" />
           </motion.div>
 
-          <div className="max-w-4xl mx-auto text-center">
+          <div className="max-w-5xl mx-auto">
             <motion.div
+              className="glass rounded-3xl p-8 md:p-12 shadow-xl mb-12"
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
             >
-              <p className="text-base md:text-lg text-foreground/80 mb-6 leading-relaxed">{about.description1}</p>
-              <p className="text-base md:text-lg text-foreground/80 mb-8 leading-relaxed">{about.description2}</p>
+              <p className="text-lg text-gray-600 mb-6 leading-relaxed text-center md:text-left">
+                I'm a passionate <span className="text-pink-500 font-semibold">Software Engineering student</span> at
+                the National University of Modern Languages with a creative soul. While I'm equipped with technical
+                skills, my heart lies in the world of{" "}
+                <span className="text-purple-500 font-semibold">design and digital creativity</span>.
+              </p>
+              <p className="text-lg text-gray-600 mb-8 leading-relaxed text-center md:text-left">
+                I believe in the power of beautiful design to transform user experiences. My journey combines technical
+                knowledge with artistic vision, allowing me to create digital experiences that are both functional and
+                visually stunning.
+              </p>
 
-              <div className="flex items-center justify-center gap-4 text-foreground/80 text-sm md:text-base">
-                <MapPin className="text-primary" size={20} />
-                <span>{about.location}</span>
+              <div className="flex flex-wrap items-center justify-center gap-4 text-gray-600">
+                <div className="flex items-center gap-2 bg-pink-50 px-4 py-2 rounded-full">
+                  <MapPin className="text-pink-500" size={18} />
+                  <span className="text-sm">Abbottabad, Pakistan</span>
+                </div>
+                <div className="flex items-center gap-2 bg-purple-50 px-4 py-2 rounded-full">
+                  <Mail className="text-purple-500" size={18} />
+                  <span className="text-sm">sanahafeez8oct@gmail.com</span>
+                </div>
               </div>
             </motion.div>
+
+            {/* Focus Areas */}
+            <div className="grid md:grid-cols-3 gap-6">
+              {focusAreas.map((area, index) => (
+                <motion.div
+                  key={area.title}
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.15 }}
+                  viewport={{ once: true }}
+                >
+                  <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 h-full group">
+                    <CardContent className="p-6 text-center">
+                      <motion.div
+                        className={`w-16 h-16 bg-gradient-to-br ${area.color} rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg`}
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                      >
+                        <area.icon className="text-white" size={28} />
+                      </motion.div>
+                      <h3 className="font-bold text-gray-800 mb-2 text-lg">{area.title}</h3>
+                      <p className="text-gray-500 text-sm">{area.description}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Education Section */}
-      <section id="education" className="py-16 md:py-20">
-        <div className="container mx-auto px-6">
+      <section id="education" className="py-20 md:py-28 bg-gradient-to-b from-white/50 to-pink-50/50">
+        <div className="container mx-auto px-4 md:px-6">
           <motion.div
-            className="text-center mb-12 md:mb-16"
+            className="text-center mb-16"
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Education
-            </h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-primary to-accent mx-auto rounded-full" />
+            <span className="text-pink-500 font-medium mb-2 block">My journey</span>
+            <h2 className="text-3xl md:text-5xl font-bold mb-4 font-[var(--font-playfair)] text-gray-800">Education</h2>
+            <div className="w-24 h-1 bg-gradient-to-r from-pink-500 to-purple-500 mx-auto rounded-full" />
           </motion.div>
 
           <motion.div
@@ -403,41 +634,52 @@ export default function Portfolio() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <Card className="max-w-4xl mx-auto border-0 shadow-2xl bg-card">
-              <CardHeader className="pb-4">
+            <Card className="max-w-4xl mx-auto border-0 shadow-2xl bg-white/90 backdrop-blur-sm overflow-hidden">
+              <div className="h-2 bg-gradient-to-r from-pink-500 via-rose-500 to-purple-500" />
+              <CardHeader className="pb-4 pt-8">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4">
-                  <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-white font-bold text-sm md:text-xl">NUML</span>
-                  </div>
+                  <motion.div
+                    className="w-16 h-16 bg-gradient-to-br from-pink-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg"
+                    whileHover={{ scale: 1.05, rotate: 5 }}
+                  >
+                    <span className="text-white font-bold text-xl">NUML</span>
+                  </motion.div>
                   <div>
-                    <CardTitle className="text-lg md:text-2xl text-card-foreground">
-                      {education.university}
+                    <CardTitle className="text-xl md:text-2xl text-gray-800">
+                      National University of Modern Languages
                     </CardTitle>
-                    <CardDescription className="text-base md:text-lg text-card-foreground/70">
-                      {education.degree}
+                    <CardDescription className="text-base text-gray-600">
+                      Bachelor of Science in Software Engineering
                     </CardDescription>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-primary text-sm md:text-base">
+                <div className="flex items-center gap-2 text-pink-600">
                   <Calendar size={16} />
-                  <span>{education.duration}</span>
+                  <span className="font-medium">Sep 2021 – May 2026</span>
                 </div>
               </CardHeader>
-              <CardContent>
-                <h4 className="font-semibold text-card-foreground mb-4">Relevant Coursework:</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                  {education.courses.map((course, index) => (
+              <CardContent className="pb-8">
+                <h4 className="font-semibold text-gray-800 mb-4">Relevant Coursework:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    "Data Structures",
+                    "Operating Systems",
+                    "OOP",
+                    "DBMS",
+                    "Internet Technology",
+                    "AI",
+                    "Software Methodology",
+                    "Computer Architecture",
+                    "Algorithm Analysis",
+                  ].map((course, index) => (
                     <motion.div
                       key={course}
                       initial={{ opacity: 0, scale: 0.8 }}
                       whileInView={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.1, duration: 0.5 }}
+                      transition={{ delay: index * 0.05 }}
                       viewport={{ once: true }}
                     >
-                      <Badge
-                        variant="secondary"
-                        className="bg-secondary text-secondary-foreground hover:bg-muted w-full justify-center py-2 text-xs md:text-sm"
-                      >
+                      <Badge className="bg-gradient-to-r from-pink-100 to-purple-100 text-pink-700 hover:from-pink-200 hover:to-purple-200 border-0 py-1.5 px-3">
                         {course}
                       </Badge>
                     </motion.div>
@@ -450,105 +692,68 @@ export default function Portfolio() {
       </section>
 
       {/* Experience Section */}
-      <section id="experience" className="py-16 md:py-20 bg-card/50">
-        <div className="container mx-auto px-6">
+      <section id="experience" className="py-20 md:py-28">
+        <div className="container mx-auto px-4 md:px-6">
           <motion.div
-            className="text-center mb-12 md:mb-16"
+            className="text-center mb-16"
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <span className="text-pink-500 font-medium mb-2 block">Where I've worked</span>
+            <h2 className="text-3xl md:text-5xl font-bold mb-4 font-[var(--font-playfair)] text-gray-800">
               Experience
             </h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-primary to-accent mx-auto rounded-full" />
+            <div className="w-24 h-1 bg-gradient-to-r from-pink-500 to-purple-500 mx-auto rounded-full" />
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-          >
-            <Card className="max-w-4xl mx-auto border-0 shadow-2xl bg-card">
-              <CardHeader>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4">
-                  <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-white font-bold text-sm md:text-xl">NTC</span>
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg md:text-2xl text-card-foreground">
-                      {experience.role}
-                    </CardTitle>
-                    <CardDescription className="text-base md:text-lg text-card-foreground/70">
-                      {experience.company}
-                    </CardDescription>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 text-primary text-sm md:text-base">
-                  <Calendar size={16} />
-                  <span>{experience.duration}</span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  {experience.tasks.map((task, index) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <div className={`w-2 h-2 ${index % 2 === 0 ? "bg-primary" : "bg-accent"} rounded-full mt-2 flex-shrink-0`} />
-                      <span className="text-card-foreground/80 text-sm md:text-base">{task}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Projects Section */}
-      <section id="projects" className="py-16 md:py-20">
-        <div className="container mx-auto px-6">
-          <motion.div
-            className="text-center mb-12 md:mb-16"
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Projects
-            </h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-primary to-accent mx-auto rounded-full" />
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 gap-6 md:gap-8 max-w-6xl mx-auto">
-            {projects.map((project, index) => (
+          <div className="max-w-4xl mx-auto space-y-6">
+            {[
+              {
+                company: "Inotech Solutions",
+                role: "Frontend & Design Intern",
+                period: "2024",
+                description:
+                  "Focused on UI/UX design and frontend development, creating visually appealing interfaces.",
+                skills: ["UI Design", "Frontend Dev", "Figma"],
+              },
+              {
+                company: "NTC Islamabad",
+                role: "Software Engineer Intern",
+                period: "June 2022 – August 2022",
+                description:
+                  "Configured network infrastructure, monitored performance, and troubleshot LAN/WAN issues.",
+                skills: ["Networking", "Cisco", "Troubleshooting"],
+              },
+            ].map((exp, index) => (
               <motion.div
-                key={project.title}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.2 }}
+                key={exp.company}
+                initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8 }}
                 viewport={{ once: true }}
               >
-                <Card className="h-full border-0 shadow-2xl bg-card hover:shadow-3xl transition-all duration-300">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg md:text-xl text-card-foreground">
-                        {project.title}
-                      </CardTitle>
-                      <ExternalLink className="text-primary" size={20} />
+                <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden hover:shadow-2xl transition-all">
+                  <div
+                    className={`h-1 bg-gradient-to-r ${index === 0 ? "from-pink-500 to-rose-500" : "from-purple-500 to-fuchsia-500"}`}
+                  />
+                  <CardContent className="p-6 md:p-8">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-800">{exp.role}</h3>
+                        <p className="text-pink-500 font-medium">{exp.company}</p>
+                      </div>
+                      <Badge variant="outline" className="border-pink-300 text-pink-600 w-fit">
+                        <Calendar size={14} className="mr-1" />
+                        {exp.period}
+                      </Badge>
                     </div>
-                    <CardDescription className="text-card-foreground/70">{project.date}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-card-foreground/80 mb-4 text-sm md:text-base">
-                      {project.description}
-                    </p>
+                    <p className="text-gray-600 mb-4">{exp.description}</p>
                     <div className="flex flex-wrap gap-2">
-                      {project.technologies.map((tech) => (
-                        <Badge key={tech} variant="outline" className="border-border text-primary text-xs">
-                          {tech}
+                      {exp.skills.map((skill) => (
+                        <Badge key={skill} className="bg-pink-50 text-pink-600 border-0">
+                          {skill}
                         </Badge>
                       ))}
                     </div>
@@ -560,273 +765,425 @@ export default function Portfolio() {
         </div>
       </section>
 
-      {/* Tech Stack Section */}
-      <section id="skills" className="py-16 md:py-20 bg-card/50">
-        <div className="container mx-auto px-6">
+      {/* Projects Section */}
+      <section id="projects" className="py-20 md:py-28 bg-gradient-to-b from-pink-50/50 to-white/50">
+        <div className="container mx-auto px-4 md:px-6">
           <motion.div
-            className="text-center mb-12 md:mb-16"
+            className="text-center mb-16"
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Tech Stack & Certifications
-            </h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-primary to-accent mx-auto rounded-full" />
+            <span className="text-pink-500 font-medium mb-2 block">My creative work</span>
+            <h2 className="text-3xl md:text-5xl font-bold mb-4 font-[var(--font-playfair)] text-gray-800">Projects</h2>
+            <div className="w-24 h-1 bg-gradient-to-r from-pink-500 to-purple-500 mx-auto rounded-full" />
           </motion.div>
 
-          <div className="max-w-6xl mx-auto">
-            {/* Tech Stack */}
-            <div className="mb-12 md:mb-16">
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {[
+              {
+                title: "Student Management System",
+                type: "Web Application",
+                date: "Jan 2024",
+                description:
+                  "Comprehensive web app for managing student records with responsive UI for registration, course assignments, and attendance.",
+                tech: ["HTML", "CSS", "JavaScript", "Python"],
+                gradient: "from-pink-500 to-rose-500",
+              },
+              {
+                title: "WireGuard VPN System",
+                type: "Network Security",
+                date: "Nov 2024",
+                description:
+                  "Secure VPN solution using WireGuard with Python automation for tunnel configuration and performance optimization.",
+                tech: ["Cisco", "Python", "WireGuard", "Networking"],
+                gradient: "from-purple-500 to-fuchsia-500",
+              },
+            ].map((project, index) => (
               <motion.div
-                className="text-center mb-8 md:mb-12"
-                initial={{ opacity: 0, y: 30 }}
+                key={project.title}
+                initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
+                transition={{ duration: 0.8, delay: index * 0.15 }}
                 viewport={{ once: true }}
               >
-                <h3 className="text-xl md:text-2xl font-bold text-foreground mb-4">Technologies I Work With</h3>
-                <p className="text-foreground/70 text-sm md:text-base">
-                  My toolkit for building amazing digital experiences
-                </p>
+                <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden group hover:shadow-2xl transition-all h-full">
+                  <div className={`h-32 bg-gradient-to-br ${project.gradient} relative overflow-hidden`}>
+                    <div className="absolute inset-0 bg-black/10" />
+                    <motion.div
+                      className="absolute inset-0 flex items-center justify-center"
+                      whileHover={{ scale: 1.1 }}
+                    >
+                      <ExternalLink className="text-white/80" size={40} />
+                    </motion.div>
+                  </div>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <Badge className={`bg-gradient-to-r ${project.gradient} text-white border-0`}>
+                        {project.type}
+                      </Badge>
+                      <span className="text-sm text-gray-500">{project.date}</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-800 mb-3">{project.title}</h3>
+                    <p className="text-gray-600 mb-4 text-sm">{project.description}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {project.tech.map((t) => (
+                        <Badge key={t} variant="outline" className="border-gray-200 text-gray-600 text-xs">
+                          {t}
+                        </Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
               </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-              <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
-                <motion.div
-                  initial={{ opacity: 0, x: -50 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.8 }}
-                  viewport={{ once: true }}
-                >
-                  <Card className="border-0 shadow-2xl bg-card h-full">
-                    <CardHeader>
-                      <CardTitle className="text-lg md:text-xl text-card-foreground flex items-center gap-3">
-                        <div className="w-6 h-6 md:w-8 md:h-8 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
-                          <span className="text-white text-xs md:text-sm font-bold">💻</span>
-                        </div>
-                        Programming Languages
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 gap-3 md:gap-4">
-                        {skills.languages.map((lang, index) => (
-                          <motion.div
-                            key={lang.name}
-                            className="bg-background rounded-xl p-3 md:p-4 shadow-lg hover:shadow-xl transition-all duration-300 border"
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: index * 0.1, duration: 0.5 }}
-                            viewport={{ once: true }}
-                            whileHover={{ scale: 1.05, y: -5 }}
-                          >
-                            <div className="text-center">
-                              <lang.icon className="text-2xl md:text-3xl mb-2 mx-auto text-foreground/70" />
-                              <div className="text-xs md:text-sm font-semibold text-foreground">{lang.name}</div>
-                            </div>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+      {/* Skills Section */}
+      <section id="skills" className="py-20 md:py-28">
+        <div className="container mx-auto px-4 md:px-6">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <span className="text-pink-500 font-medium mb-2 block">What I work with</span>
+            <h2 className="text-3xl md:text-5xl font-bold mb-4 font-[var(--font-playfair)] text-gray-800">
+              Skills & Tools
+            </h2>
+            <div className="w-24 h-1 bg-gradient-to-r from-pink-500 to-purple-500 mx-auto rounded-full" />
+          </motion.div>
 
-                <motion.div
-                  initial={{ opacity: 0, x: 50 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.8 }}
-                  viewport={{ once: true }}
-                >
-                  <Card className="border-0 shadow-2xl bg-card h-full">
-                    <CardHeader>
-                      <CardTitle className="text-lg md:text-xl text-card-foreground flex items-center gap-3">
-                        <div className="w-6 h-6 md:w-8 md:h-8 bg-gradient-to-br from-accent to-primary rounded-lg flex items-center justify-center">
-                          <span className="text-white text-xs md:text-sm font-bold">🛠️</span>
-                        </div>
-                        Developer Tools
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 gap-3 md:gap-4">
-                        {skills.tools.map((tool, index) => (
-                          <motion.div
-                            key={tool.name}
-                            className="bg-background rounded-xl p-3 md:p-4 shadow-lg hover:shadow-xl transition-all duration-300 border"
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: index * 0.1, duration: 0.5 }}
-                            viewport={{ once: true }}
-                            whileHover={{ scale: 1.05, y: -5 }}
-                          >
-                            <div className="text-center">
-                              {tool.isCustom ? (
-                                <VSCodeIcon className="w-6 h-6 md:w-8 md:h-8 mb-2 mx-auto" />
-                              ) : (
-                                <tool.icon className="text-2xl md:text-3xl mb-2 mx-auto text-foreground/70" />
-                              )}
-                              <div className="text-xs md:text-sm font-semibold text-foreground">{tool.name}</div>
-                            </div>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </div>
-            </div>
-
-            {/* Certifications */}
+          <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-8">
+            {/* Design Tools */}
             <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
             >
-              <div className="text-center mb-6 md:mb-8">
-                <h3 className="text-xl md:text-2xl font-bold text-foreground mb-4">Certifications</h3>
-                <p className="text-foreground/70 text-sm md:text-base">
-                  Professional development and specialized training
-                </p>
-              </div>
+              <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm h-full">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3 text-gray-800">
+                    <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-rose-500 rounded-xl flex items-center justify-center">
+                      <Palette className="text-white" size={20} />
+                    </div>
+                    Design & Creative Tools
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    {[
+                      { name: "Figma", icon: SiFigma, color: "text-purple-500" },
+                      { name: "Adobe XD", icon: SiAdobexd, color: "text-pink-500" },
+                      { name: "Canva", icon: SiCanva, color: "text-blue-500" },
+                      { name: "Photoshop", icon: SiAdobephotoshop, color: "text-blue-600" },
+                    ].map((tool, index) => (
+                      <motion.div
+                        key={tool.name}
+                        className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-xl p-4 text-center hover:shadow-lg transition-all"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: index * 0.1 }}
+                        viewport={{ once: true }}
+                        whileHover={{ scale: 1.05, y: -5 }}
+                      >
+                        <tool.icon className={`text-3xl mx-auto mb-2 ${tool.color}`} />
+                        <span className="text-sm font-medium text-gray-700">{tool.name}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-              <div className="grid md:grid-cols-2 gap-6 md:gap-8">
-                {skills.certifications.map((cert) => (
-                  <Card key={cert.title} className="border-0 shadow-2xl bg-card">
-                    <CardHeader>
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center">
-                          <span className="text-white font-bold text-sm md:text-base">
-                            {cert.title.charAt(0)}
-                          </span>
-                        </div>
-                        <CardTitle className="text-base md:text-lg text-card-foreground">
-                          {cert.title}
-                        </CardTitle>
+            {/* Programming */}
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm h-full">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3 text-gray-800">
+                    <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-fuchsia-500 rounded-xl flex items-center justify-center">
+                      <span className="text-white font-bold">{"</>"}</span>
+                    </div>
+                    Programming Languages
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    {[
+                      { name: "Python", icon: SiPython, color: "text-yellow-500" },
+                      { name: "JavaScript", icon: SiJavascript, color: "text-yellow-400" },
+                      { name: "Java", icon: FaJava, color: "text-orange-500" },
+                      { name: "C++", icon: SiCplusplus, color: "text-blue-500" },
+                      { name: "HTML", icon: SiHtml5, color: "text-orange-600" },
+                      { name: "CSS", icon: SiCss3, color: "text-blue-600" },
+                    ].map((lang, index) => (
+                      <motion.div
+                        key={lang.name}
+                        className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 text-center hover:shadow-lg transition-all"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: index * 0.1 }}
+                        viewport={{ once: true }}
+                        whileHover={{ scale: 1.05, y: -5 }}
+                      >
+                        <lang.icon className={`text-3xl mx-auto mb-2 ${lang.color}`} />
+                        <span className="text-sm font-medium text-gray-700">{lang.name}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+
+          {/* Certifications */}
+          <motion.div
+            className="mt-12 max-w-4xl mx-auto"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <h3 className="text-2xl font-bold text-center text-gray-800 mb-8">Certifications</h3>
+            <div className="grid md:grid-cols-2 gap-6">
+              {[
+                { title: "MEAN Stack Development", icon: SiMongodb, color: "from-green-500 to-teal-500" },
+                { title: "UI/UX Design", icon: SiFigma, color: "from-pink-500 to-purple-500" },
+              ].map((cert, index) => (
+                <motion.div
+                  key={cert.title}
+                  className="glass rounded-2xl p-6 flex items-center gap-4"
+                  whileHover={{ scale: 1.02 }}
+                >
+                  <div
+                    className={`w-12 h-12 bg-gradient-to-br ${cert.color} rounded-xl flex items-center justify-center shadow-lg`}
+                  >
+                    <cert.icon className="text-white text-xl" />
+                  </div>
+                  <span className="font-semibold text-gray-800">{cert.title}</span>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact" className="py-20 md:py-28 bg-gradient-to-b from-white/50 to-pink-50">
+        <div className="container mx-auto px-4 md:px-6">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <span className="text-pink-500 font-medium mb-2 block">Get in touch</span>
+            <h2 className="text-3xl md:text-5xl font-bold mb-4 font-[var(--font-playfair)] text-gray-800">
+              Let's Connect
+            </h2>
+            <div className="w-24 h-1 bg-gradient-to-r from-pink-500 to-purple-500 mx-auto rounded-full" />
+            <p className="text-gray-600 mt-6 max-w-xl mx-auto">
+              I'm always excited to discuss new opportunities and collaborate on creative projects!
+            </p>
+          </motion.div>
+
+          <div className="max-w-5xl mx-auto grid lg:grid-cols-2 gap-8">
+            {/* Contact Info */}
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="space-y-6"
+            >
+              <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden">
+                <div className="h-2 bg-gradient-to-r from-pink-500 to-purple-500" />
+                <CardContent className="p-6 md:p-8 space-y-6">
+                  {[
+                    {
+                      icon: Mail,
+                      label: "Email",
+                      value: "sanahafeez8oct@gmail.com",
+                      href: "mailto:sanahafeez8oct@gmail.com",
+                    },
+                    { icon: Phone, label: "Phone", value: "+92 314 3707610", href: "tel:+923143707610" },
+                    { icon: Github, label: "GitHub", value: "sanahafeez9t9", href: "https://github.com/sanahafeez9t9" },
+                    {
+                      icon: Linkedin,
+                      label: "LinkedIn",
+                      value: "sanahafeez",
+                      href: "https://linkedin.com/in/sanahafeez",
+                    },
+                    { icon: MapPin, label: "Location", value: "Abbottabad, Pakistan" },
+                  ].map((item, index) => (
+                    <motion.div
+                      key={item.label}
+                      className="flex items-center gap-4"
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      viewport={{ once: true }}
+                    >
+                      <div className="w-12 h-12 bg-gradient-to-br from-pink-100 to-purple-100 rounded-xl flex items-center justify-center">
+                        <item.icon className="text-pink-500" size={20} />
                       </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-card-foreground/80 mb-4 text-sm md:text-base">
-                        {cert.description}
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {cert.technologies.map((tech) => (
-                          <Badge
-                            key={tech.name}
-                            className="bg-secondary text-secondary-foreground hover:bg-muted flex items-center gap-1 text-xs"
+                      <div>
+                        <p className="text-sm text-gray-500">{item.label}</p>
+                        {item.href ? (
+                          <a
+                            href={item.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-medium text-gray-800 hover:text-pink-500 transition-colors"
                           >
-                            {tech.icon && <tech.icon className="w-3 h-3" />}
-                            {tech.name}
-                          </Badge>
-                        ))}
+                            {item.value}
+                          </a>
+                        ) : (
+                          <p className="font-medium text-gray-800">{item.value}</p>
+                        )}
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                    </motion.div>
+                  ))}
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Contact Form */}
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden">
+                <div className="h-2 bg-gradient-to-r from-purple-500 to-pink-500" />
+                <CardContent className="p-6 md:p-8">
+                  <form onSubmit={handleSubmit} className="space-y-5">
+                    <input type="hidden" name="_captcha" value="false" />
+                    <input type="hidden" name="_template" value="table" />
+
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-2 block">Your Name</label>
+                      <Input
+                        name="name"
+                        placeholder="Enter your name"
+                        required
+                        className="border-pink-100 focus:border-pink-300 rounded-xl py-6"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-2 block">Your Email</label>
+                      <Input
+                        name="email"
+                        type="email"
+                        placeholder="Enter your email"
+                        required
+                        className="border-pink-100 focus:border-pink-300 rounded-xl py-6"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-2 block">Subject</label>
+                      <Input
+                        name="subject"
+                        placeholder="What's this about?"
+                        required
+                        className="border-pink-100 focus:border-pink-300 rounded-xl py-6"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-2 block">Message</label>
+                      <Textarea
+                        name="message"
+                        placeholder="Tell me about your project..."
+                        rows={4}
+                        required
+                        className="border-pink-100 focus:border-pink-300 rounded-xl resize-none"
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      disabled={formStatus === "sending"}
+                      className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white py-6 rounded-xl font-medium shadow-lg shadow-pink-500/25"
+                    >
+                      {formStatus === "sending" ? (
+                        <>
+                          <Loader2 className="mr-2 animate-spin" size={18} />
+                          Sending...
+                        </>
+                      ) : formStatus === "sent" ? (
+                        <>
+                          <Heart className="mr-2" size={18} />
+                          Message Sent!
+                        </>
+                      ) : formStatus === "error" ? (
+                        "Try Again"
+                      ) : (
+                        <>
+                          <Send className="mr-2" size={18} />
+                          Send Message
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="py-16 md:py-20">
-        <div className="container mx-auto px-6">
-          <motion.div
-            className="text-center mb-12 md:mb-16"
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Let's Connect
-            </h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-primary to-accent mx-auto rounded-full" />
-            <p className="text-foreground/70 mt-6 max-w-2xl mx-auto text-sm md:text-base">
-              I'm always excited to discuss new opportunities and collaborate on interesting projects. Feel free to
-              reach out!
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="max-w-2xl mx-auto"
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-          >
-            <Card className="border-0 shadow-2xl bg-card">
-              <CardContent className="p-6 md:p-8">
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Your Name" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Your Email" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="message"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Message</FormLabel>
-                          <FormControl>
-                            <Textarea placeholder="Your Message" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button type="submit" className="w-full" disabled={formStatus === "sending"}>
-                      {formStatus === "sending" ? "Sending..." : "Send Message"}
-                    </Button>
-                  </form>
-                </Form>
-                {formStatus === "success" && (
-                  <p className="text-green-500 mt-4">Message sent successfully!</p>
-                )}
-                {formStatus === "error" && (
-                  <p className="text-red-500 mt-4">Failed to send message. Please try again.</p>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-      </section>
-
       {/* Footer */}
-      <footer className="py-6 md:py-8 bg-primary text-primary-foreground">
-        <div className="container mx-auto px-6 text-center">
-          <motion.p
-            className="text-sm md:text-base"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-          >
-            © 2024 Sana Hafeez. Made with <Heart className="inline w-4 h-4 text-accent" /> and lots of code.
-          </motion.p>
+      <footer className="py-8 bg-gradient-to-r from-pink-600 via-rose-500 to-purple-600 text-white">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <motion.p
+              className="text-sm text-center md:text-left"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+            >
+              © 2025 Sana Hafeez. Crafted with <Heart className="inline w-4 h-4 text-pink-200 mx-1" /> and creativity
+            </motion.p>
+            <div className="flex gap-4">
+              <motion.a
+                href="https://github.com/sanahafeez9t9"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+                whileHover={{ scale: 1.1 }}
+              >
+                <Github size={18} />
+              </motion.a>
+              <motion.a
+                href="https://linkedin.com/in/sanahafeez"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+                whileHover={{ scale: 1.1 }}
+              >
+                <Linkedin size={18} />
+              </motion.a>
+              <motion.a
+                href="mailto:sanahafeez8oct@gmail.com"
+                className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+                whileHover={{ scale: 1.1 }}
+              >
+                <Mail size={18} />
+              </motion.a>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

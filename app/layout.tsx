@@ -1,28 +1,40 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
+import { Poppins, Playfair_Display } from "next/font/google"
 import "./globals.css"
 
-const inter = Inter({ subsets: ["latin"] })
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-poppins",
+})
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-playfair",
+})
 
 export const metadata: Metadata = {
-  title: "Sana Hafeez Portfolio",
-  description: "Software Engineering Student & Aspiring Developer - Creating beautiful digital experiences",
-  keywords: ["Sana Hafeez", "Software Engineer", "Portfolio", "Web Developer", "Student", "Pakistan"],
+  title: "Sana Hafeez | UI/UX Designer & Creative Enthusiast",
+  description:
+    "UI/UX Designer, Digital Marketing & Graphic Design Enthusiast - Crafting beautiful digital experiences with creativity and passion",
+  keywords: ["Sana Hafeez", "UI/UX Designer", "Digital Marketing", "Graphic Design", "Portfolio", "Pakistan"],
   authors: [{ name: "Sana Hafeez" }],
   creator: "Sana Hafeez",
   openGraph: {
-    title: "Sana Hafeez Portfolio",
-    description: "Software Engineering Student & Aspiring Developer - Creating beautiful digital experiences",
+    title: "Sana Hafeez | UI/UX Designer & Creative Enthusiast",
+    description:
+      "UI/UX Designer, Digital Marketing & Graphic Design Enthusiast - Crafting beautiful digital experiences",
     type: "website",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Sana Hafeez Portfolio",
-    description: "Software Engineering Student & Aspiring Developer - Creating beautiful digital experiences",
+    title: "Sana Hafeez | UI/UX Designer & Creative Enthusiast",
+    description: "UI/UX Designer, Digital Marketing & Graphic Design Enthusiast",
   },
-    generator: 'v0.app'
+  generator: "v0.app",
 }
 
 export default function RootLayout({
@@ -31,8 +43,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="en" className="scroll-smooth">
+      <body className={`${poppins.variable} ${playfair.variable} font-sans antialiased`}>{children}</body>
     </html>
   )
 }
